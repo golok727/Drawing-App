@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Drawing App</title>
+	</head>
+	<body>
+		<div class="relative">
+			<!-- <h1>Radhey Shyam</h1> -->
+			<div
+				class="absolute top-0 w-full grid place-content-center py-3 px-2 rounded"
+			>
+				<div class="flex items-center gap-3">
+					<div>
+						<div role="tablist" class="tabs tabs-boxed">
+							<a role="tab" class="tab tab-active"
+								><span class="material-symbols-outlined"> brush </span></a
+							>
+							<a role="tab" class="tab"
+								><span class="material-symbols-outlined"> ink_eraser </span></a
+							>
+							<a role="tab" class="tab"
+								><span class="material-symbols-outlined">
+									highlight_mouse_cursor
+								</span></a
+							>
+						</div>
+					</div>
+					<div class="flex items-center gap-2">
+						<button class="btn btn-circle" data-undo-btn>
+							<span class="material-symbols-outlined"> undo </span>
+						</button>
+						<button class="btn btn-circle" data-redo-btn>
+							<span class="material-symbols-outlined"> redo </span>
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<div
+				class="bg-black min-h-screen overflow-hidden"
+				id="canvasContainer"
+			></div>
+		</div>
+	</body>
+	<script type="module" src="/src/main.ts"></script>
+</html>
