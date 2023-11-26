@@ -1,7 +1,53 @@
 import UI from "./ui";
 import AppHistory from "./history";
-type Vec2 = [number, number];
+import Toolbar from "./toolbar";
+const MOUSE_BUTTONS = {
+	LMB: 0,
+	MMB: 1,
+	RMB: 2,
+};
 
+const COLORS = {
+	BLACK: 0,
+	WHITE: 1,
+	RED: 2,
+	GREEN: 3,
+	BLUE: 4,
+	CYAN: 5,
+	YELLOW: 6,
+	HOT_PINK: 7,
+} as const;
+
+const getColor = (color: (typeof COLORS)[keyof typeof COLORS]) => {
+	switch (color) {
+		case COLORS.BLACK:
+			return "#000";
+		case COLORS.WHITE:
+			return "#ffffff";
+
+		case COLORS.RED:
+			return "#ff0000";
+
+		case COLORS.GREEN:
+			return "#00ff00";
+
+		case COLORS.BLUE:
+			return "#0000ff";
+
+		case COLORS.YELLOW:
+			return "#ffff00";
+
+		case COLORS.CYAN:
+			return "#00ffff";
+
+		case COLORS.HOT_PINK:
+			return "#FF69B4";
+		default:
+			return "#000";
+	}
+};
+
+export type Vec2 = [number, number];
 class Canvas {
 	canvas: HTMLCanvasElement = document.createElement("canvas");
 	ctx: CanvasRenderingContext2D;
@@ -11,13 +57,23 @@ class Canvas {
 	centerY: number;
 
 	private ui = new UI();
-	private history = new AppHistory();
 
 	private paths: Vec2[][] = [];
+
+	private history = new AppHistory(this.paths);
 
 	private isDrawing = false;
 
 	private mouse: { x: number; y: number } = { x: 0, y: 0 };
+
+	private toolbar = new Toolbar();
+
+	private refHandlers!: {
+		mouseDownHandler: (evt: MouseEvent) => void;
+		mouseUpHandler: (evt: MouseEvent) => void;
+		mouseMoveHandler: (evt: MouseEvent) => void;
+		keyDownHandler: (evt: KeyboardEvent) => void;
+	};
 
 	constructor(container: HTMLElement) {
 		this.canvas.style.cursor = "url(/cursor.png), default";
@@ -47,20 +103,28 @@ class Canvas {
 
 		ui.addComponent(document.querySelector("[data-undo-btn]")!, {
 			click: () => {
-				console.log("Undo");
+				this.history.undo();
 			},
 		});
 
 		ui.addComponent(document.querySelector("[data-redo-btn]")!, {
 			click: () => {
-				console.log("Redo");
+				this.history.redo();
+			},
+		});
+
+		ui.addComponent(document.querySelector("[data-clear-all-btn]"!)!, {
+			click: () => {
+				// Change this
+				this.history.clear();
+				this.paths = [];
 			},
 		});
 	}
 	private drawPath(path: Vec2[]) {
 		const { ctx } = this;
-		ctx.strokeStyle = "white";
-		ctx.lineWidth = 3;
+		ctx.strokeStyle = getColor(COLORS.HOT_PINK);
+		ctx.lineWidth = 6;
 		ctx.lineJoin = "round";
 		ctx.lineCap = "round";
 		ctx.beginPath();
@@ -81,8 +145,10 @@ class Canvas {
 		const mouse = this.mouseVec();
 
 		this.paths.push([mouse]);
-
-		this.isDrawing = true;
+		if (evt.button == MOUSE_BUTTONS.LMB) {
+			this.isDrawing = true;
+			this.history.clear();
+		}
 	}
 	private handleMouseUp(_evt: MouseEvent) {
 		this.isDrawing = false;
@@ -102,15 +168,56 @@ class Canvas {
 		return [this.mouse.x, this.mouse.y];
 	}
 
+	private handleKeyDown(evt: KeyboardEvent) {
+		const key = evt.key.toLocaleLowerCase();
+		const CTRL = evt.ctrlKey;
+		const SHIFT = evt.shiftKey;
+
+		if (CTRL && SHIFT && key === "z") {
+			this.history.redo();
+		} else if (CTRL && key === "z") {
+			this.history.undo();
+		}
+	}
+
 	private addEventListeners() {
-		this.canvas.addEventListener("mousedown", this.handleMouseDown.bind(this));
-		this.canvas.addEventListener("mouseup", this.handleMouseUp.bind(this));
-		this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this));
+		const mouseDownHandler = this.handleMouseDown.bind(this);
+		const mouseUpHandler = this.handleMouseUp.bind(this);
+		const mouseMoveHandler = this.handleMouseMove.bind(this);
+		const keyDownHandler = this.handleKeyDown.bind(this);
+
+		this.refHandlers = {
+			...this.refHandlers,
+			keyDownHandler,
+			mouseDownHandler,
+			mouseMoveHandler,
+			mouseUpHandler,
+		};
+
+		this.canvas.addEventListener("mousedown", mouseDownHandler);
+		this.canvas.addEventListener("mouseup", mouseUpHandler);
+		this.canvas.addEventListener("mousemove", mouseMoveHandler);
+		document.addEventListener("keydown", keyDownHandler);
 	}
 
 	private draw() {
 		this.drawPaths();
 	}
+
+	destroy() {
+		const {
+			keyDownHandler,
+			mouseDownHandler,
+			mouseMoveHandler,
+			mouseUpHandler,
+		} = this.refHandlers;
+
+		this.canvas.removeEventListener("mousedown", mouseDownHandler);
+		this.canvas.removeEventListener("mouseup", mouseUpHandler);
+		this.canvas.removeEventListener("mousemove", mouseMoveHandler);
+		document.removeEventListener("keydown", keyDownHandler);
+	}
+
 	render() {
 		const { ctx } = this;
 		ctx.clearRect(0, 0, this.cWidth, this.cHeight);
