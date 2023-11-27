@@ -1,6 +1,6 @@
-import { Tool } from "./toolbar";
+import Toolbar, { Tool } from "./toolbar";
 
-type EventHandlers = {
+export type EventHandlers = {
 	[K in keyof HTMLElementEventMap]?: (event: HTMLElementEventMap[K]) => void;
 };
 type Component = { element: Element; handlers: EventHandlers };
@@ -66,6 +66,10 @@ class UI {
 			component.element.addEventListener(type, eventHandler as EventListener);
 		}
 		return component;
+	}
+
+	toolbarInit(onToolChange?: (tool: Tool) => void) {
+		new Toolbar(onToolChange);
 	}
 }
 

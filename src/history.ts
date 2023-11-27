@@ -1,33 +1,22 @@
 import CanvasElement from "./element";
 
+export class HistoryState {
+	private staged: CanvasElement | CanvasElement[];
+	constructor(toSave: CanvasElement | CanvasElement[]) {
+		this.staged = toSave;
+	}
+	get data() {
+		return this.staged;
+	}
+}
+
 class AppHistory {
-	private history: CanvasElement[] = [];
-	private state: CanvasElement[];
+	private history: HistoryState[] = [];
 
-	constructor(state: CanvasElement[]) {
-		this.state = state;
-	}
-
-	setState(state: CanvasElement[]) {
-		this.state = state;
-	}
+	constructor() {}
 
 	clear(): void {
 		this.history = []; // Clear forward history when clearing all history
-	}
-
-	undo(): void {
-		const lastAction = this.state.pop();
-		if (lastAction) {
-			this.history.push(lastAction);
-		}
-	}
-
-	redo(): void {
-		const lastUndo = this.history.pop();
-		if (lastUndo) {
-			this.state.push(lastUndo);
-		}
 	}
 }
 

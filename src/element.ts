@@ -2,13 +2,12 @@ import { COLORS } from "./utils";
 import Vector from "./vector";
 
 const defaultStyles = {
-	fillColor: COLORS.WHITE,
-	strokeColor: COLORS.YELLOW,
+	fillColor: COLORS.CYAN,
+	strokeColor: COLORS.CYAN,
 	lineWidth: 10,
 	lineDash: [],
 };
 
-// export type ElementType = "stroke" | "circle" | "rect" | "line";
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -19,7 +18,7 @@ export const ElementTypes = {
 
 type ElementType = (typeof ElementTypes)[keyof typeof ElementTypes];
 
-type BoundingBox = { top: number; left: number; right: number; bottom: number };
+// type BoundingBox = { top: number; left: number; right: number; bottom: number };
 
 class CanvasElement {
 	id: string = Math.random().toString().replace(".", "");
@@ -40,7 +39,9 @@ class CanvasElement {
 		console.log(this.boundingBox);
 	}
 	// Use to get data saving
-	getData() {}
+	getData() {
+		console.warn("getData Should be implemented for data storage");
+	}
 
 	// Common method to render elements
 	draw(_: CanvasRenderingContext2D): void {
@@ -62,12 +63,14 @@ export class LineElement extends CanvasElement {
 	}
 }
 
+// Rectangles
 export class RectangleElement extends CanvasElement {
 	constructor() {
 		super(ElementTypes.Rect);
 	}
 }
 
+// Strokes
 export class StrokeElement extends CanvasElement {
 	private points: Vector[];
 
@@ -101,6 +104,7 @@ export class StrokeElement extends CanvasElement {
 	}
 }
 
+// Circle
 export class CircleElement extends CanvasElement {
 	constructor() {
 		super(ElementTypes.Circle);
