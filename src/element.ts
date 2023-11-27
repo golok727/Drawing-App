@@ -1,9 +1,9 @@
-import { COLORS, getColor } from "./utils";
+import { COLORS } from "./utils";
 import Vector from "./vector";
 
 const defaultStyles = {
 	fillColor: COLORS.WHITE,
-	strokeColor: COLORS.WHITE,
+	strokeColor: COLORS.YELLOW,
 	lineWidth: 10,
 	lineDash: [],
 };
@@ -74,7 +74,7 @@ export class StrokeElement extends CanvasElement {
 	private drawStroke(ctx: CanvasRenderingContext2D) {
 		if (this.points.length === 0) return;
 
-		ctx.strokeStyle = getColor(this.styles.strokeColor);
+		ctx.strokeStyle = this.styles.strokeColor;
 		ctx.lineWidth = this.styles.lineWidth;
 		ctx.lineJoin = "round";
 		ctx.lineCap = "round";
