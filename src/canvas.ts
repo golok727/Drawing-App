@@ -3,6 +3,7 @@ import AppHistory from "./history";
 import { Tool } from "./toolbar";
 import Vector from "./vector";
 import Renderer from "./renderer";
+
 const MOUSE_BUTTONS = {
 	LMB: 0,
 	MMB: 1,
