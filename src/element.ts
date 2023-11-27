@@ -8,7 +8,16 @@ const defaultStyles = {
 	lineDash: [],
 };
 
-export type ElementType = "stroke" | "circle" | "rect" | "line";
+// export type ElementType = "stroke" | "circle" | "rect" | "line";
+
+export const ElementTypes = {
+	Stroke: "stroke",
+	Circle: "circle",
+	Rect: "rect",
+	Line: "line",
+} as const;
+
+type ElementType = (typeof ElementTypes)[keyof typeof ElementTypes];
 
 type BoundingBox = { top: number; left: number; right: number; bottom: number };
 
@@ -46,7 +55,7 @@ export class LineElement extends CanvasElement {
 	end: Vector;
 
 	constructor(begin: [number, number], end: [number, number]) {
-		super("line");
+		super(ElementTypes.Line);
 
 		this.begin = Vector.from(begin);
 		this.end = Vector.from(end);
@@ -55,7 +64,7 @@ export class LineElement extends CanvasElement {
 
 export class RectangleElement extends CanvasElement {
 	constructor() {
-		super("rect");
+		super(ElementTypes.Rect);
 	}
 }
 
@@ -63,7 +72,7 @@ export class StrokeElement extends CanvasElement {
 	private points: Vector[];
 
 	constructor() {
-		super("stroke");
+		super(ElementTypes.Stroke);
 		this.points = [];
 	}
 
@@ -94,7 +103,7 @@ export class StrokeElement extends CanvasElement {
 
 export class CircleElement extends CanvasElement {
 	constructor() {
-		super("circle");
+		super(ElementTypes.Circle);
 	}
 }
 

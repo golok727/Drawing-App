@@ -1,5 +1,4 @@
 import UI from "./ui";
-import { getColor, COLORS } from "./utils";
 import AppHistory from "./history";
 import Toolbar, { Tool } from "./toolbar";
 import CanvasElement, { StrokeElement } from "./element";
@@ -45,7 +44,7 @@ class Canvas {
 	constructor(container: HTMLElement) {
 		this.setupToolBar();
 
-		this.setCursor();
+		this.ui.setCursor(this.canvas, this.currentTool);
 		this.canvas.classList.add("min-h-screen");
 
 		container.appendChild(this.canvas);
@@ -89,36 +88,9 @@ class Canvas {
 	private setupToolBar() {
 		new Toolbar((tool) => {
 			this.currentTool = tool;
-			this.setCursor();
+			this.ui.setCursor(this.canvas, this.currentTool);
 		});
 	}
-	private setCursor() {
-		switch (this.currentTool) {
-			case "brush":
-				this.canvas.style.cursor = "url(/brush-cursor.png), crosshair";
-				break;
-
-			case "eraser":
-				this.canvas.style.cursor = "url(/eraser-cursor.png) 25 15, crosshair";
-				break;
-
-			case "rect":
-			case "circle":
-			case "line":
-			case "texture":
-				this.canvas.style.cursor = "crosshair";
-				break;
-
-			case "highlighter":
-				this.canvas.style.cursor = "url(/laser-cursor.png) 20 15, crosshair";
-				break;
-
-			case "hand":
-				this.canvas.style.cursor = "grab";
-				break;
-		}
-	}
-
 	private setupUI() {
 		const { ui } = this;
 

@@ -1,3 +1,5 @@
+import { Tool } from "./toolbar";
+
 type EventHandlers = {
 	[K in keyof HTMLElementEventMap]?: (event: HTMLElementEventMap[K]) => void;
 };
@@ -8,6 +10,33 @@ class UI {
 	private isRegistered = false;
 
 	constructor() {}
+
+	setCursor(canvas: HTMLCanvasElement, tool: Tool) {
+		switch (tool) {
+			case "brush":
+				canvas.style.cursor = "url(/brush-cursor.png), crosshair";
+				break;
+
+			case "eraser":
+				canvas.style.cursor = "url(/eraser-cursor.png) 25 15, crosshair";
+				break;
+
+			case "rect":
+			case "circle":
+			case "line":
+			case "texture":
+				canvas.style.cursor = "crosshair";
+				break;
+
+			case "highlighter":
+				canvas.style.cursor = "url(/laser-cursor.png) 20 15, crosshair";
+				break;
+
+			case "hand":
+				canvas.style.cursor = "grab";
+				break;
+		}
+	}
 
 	addComponent<T extends Element>(element: T, handlers: EventHandlers) {
 		if (this.isRegistered)
