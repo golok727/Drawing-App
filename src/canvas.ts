@@ -168,7 +168,7 @@ class Canvas {
 
 		if (this.isDrawing && this.isCurrentTool("brush")) {
 			const point = this.getMouseLocation();
-			this.renderer.drawStroke(Vector.from(point));
+			this.renderer.makeStroke(Vector.from(point));
 		}
 	}
 

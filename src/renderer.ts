@@ -23,7 +23,7 @@ class Renderer {
 		stroke.addPoint(startPos);
 		this.m_Elements.push(stroke);
 	}
-	drawStroke(point: Vector) {
+	makeStroke(point: Vector) {
 		if (this.m_Elements.length <= 0) return;
 
 		const currentElement = this.m_Elements[this.m_Elements.length - 1];
