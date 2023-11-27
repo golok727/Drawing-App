@@ -141,27 +141,7 @@ class Canvas {
 			},
 		});
 	}
-	private drawPath(path: Vec2[]) {
-		const { ctx } = this;
-		ctx.strokeStyle = getColor(COLORS.GREEN);
-		ctx.lineWidth = 6;
-		ctx.lineJoin = "round";
-		ctx.lineCap = "round";
-		ctx.beginPath();
-		ctx.moveTo(...path[0]);
-		for (let i = 1; i < path.length; i++) {
-			ctx.lineTo(...path[i]);
-		}
-		ctx.stroke();
-	}
 
-	private createElement() {
-		switch (this.currentTool) {
-			case "brush": {
-				this.createStrokeElement();
-			}
-		}
-	}
 	private createStrokeElement() {
 		const stroke = new StrokeElement();
 		stroke.addPoint(Vector.from(this.mouseVec()));

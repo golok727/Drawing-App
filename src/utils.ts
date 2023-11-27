@@ -7,6 +7,7 @@ export const COLORS = {
 	CYAN: 5,
 	YELLOW: 6,
 	HOT_PINK: 7,
+	NONE: -1,
 } as const;
 
 export const getColor = (color: (typeof COLORS)[keyof typeof COLORS]) => {
@@ -33,6 +34,10 @@ export const getColor = (color: (typeof COLORS)[keyof typeof COLORS]) => {
 
 		case COLORS.HOT_PINK:
 			return "#FF69B4";
+
+		case COLORS.NONE:
+			return "";
+
 		default:
 			return "#000";
 	}

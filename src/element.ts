@@ -1,6 +1,13 @@
 import { COLORS, getColor } from "./utils";
 import Vector from "./vector";
 
+const defaultStyles = {
+	fillColor: COLORS.WHITE,
+	strokeColor: COLORS.WHITE,
+	lineWidth: 10,
+	lineDash: [],
+};
+
 export type ElementType = "stroke" | "circle" | "rect" | "line";
 
 type BoundingBox = { top: number; left: number; right: number; bottom: number };
@@ -8,6 +15,11 @@ type BoundingBox = { top: number; left: number; right: number; bottom: number };
 class CanvasElement {
 	id: string = Math.random().toString().replace(".", "");
 	type: ElementType;
+
+	styles = {
+		...defaultStyles,
+	};
+
 	private boundingBox: { topLeft: Vector; bottomRight: Vector };
 
 	constructor(type: ElementType) {
@@ -62,8 +74,8 @@ export class StrokeElement extends CanvasElement {
 	private drawStroke(ctx: CanvasRenderingContext2D) {
 		if (this.points.length === 0) return;
 
-		ctx.strokeStyle = getColor(COLORS.GREEN);
-		ctx.lineWidth = 6;
+		ctx.strokeStyle = getColor(this.styles.strokeColor);
+		ctx.lineWidth = this.styles.lineWidth;
 		ctx.lineJoin = "round";
 		ctx.lineCap = "round";
 		ctx.beginPath();
