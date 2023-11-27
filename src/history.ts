@@ -1,10 +1,14 @@
-import { Vec2 } from "./canvas";
+import CanvasElement from "./element";
 
 class AppHistory {
-	private history: Vec2[][] = [];
-	private state: Vec2[][];
+	private history: CanvasElement[] = [];
+	private state: CanvasElement[];
 
-	constructor(state: Vec2[][]) {
+	constructor(state: CanvasElement[]) {
+		this.state = state;
+	}
+
+	setState(state: CanvasElement[]) {
 		this.state = state;
 	}
 

@@ -10,10 +10,15 @@ class Vector {
 		this.z = z;
 	}
 
-	static from(val: number | number[] | Vector): Vector {
+	static from(
+		val: number | number[] | Vector | { x?: number; y?: number; z?: number }
+	): Vector {
 		if (Array.isArray(val)) return new Vector(...val);
 
 		if (val instanceof Vector) return new Vector(val.x, val.y, val.z);
+
+		if (typeof val === "object")
+			return new Vector(val.x ?? 0, val.y ?? 0, val.z ?? 0);
 
 		return new Vector(val, val, val);
 	}

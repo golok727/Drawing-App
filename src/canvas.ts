@@ -2,6 +2,8 @@ import UI from "./ui";
 import { getColor, COLORS } from "./utils";
 import AppHistory from "./history";
 import Toolbar, { Tool } from "./toolbar";
+import CanvasElement, { StrokeElement } from "./element";
+import Vector from "./vector";
 const MOUSE_BUTTONS = {
 	LMB: 0,
 	MMB: 1,
@@ -19,11 +21,15 @@ class Canvas {
 
 	private ui = new UI();
 
-	private paths: Vec2[][] = [];
+	private elements: CanvasElement[] = [];
 
-	private history = new AppHistory(this.paths);
+	private history = new AppHistory(this.elements);
 
 	private isDrawing = false;
+
+	private isTransforming = false;
+
+	private isReadOnly = false;
 
 	private mouse: { x: number; y: number } = { x: 0, y: 0 };
 
@@ -41,8 +47,6 @@ class Canvas {
 
 		this.setCursor();
 		this.canvas.classList.add("min-h-screen");
-		// this.canvas.style.height = "100%";
-		// this.canvas.style.width = "100%";
 
 		container.appendChild(this.canvas);
 		this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -134,7 +138,6 @@ class Canvas {
 			click: () => {
 				// Change this
 				this.history.clear();
-				this.paths = [];
 			},
 		});
 	}
@@ -151,20 +154,33 @@ class Canvas {
 		}
 		ctx.stroke();
 	}
-	private drawPaths() {
-		for (const path of this.paths) {
-			this.drawPath(path);
+
+	private createElement() {
+		switch (this.currentTool) {
+			case "brush": {
+				this.createStrokeElement();
+			}
 		}
 	}
-	private handleMouseDown(evt: MouseEvent) {
-		this.mouse.x = evt.offsetX;
-		this.mouse.y = evt.offsetY;
-		const mouse = this.mouseVec();
+	private createStrokeElement() {
+		const stroke = new StrokeElement();
+		stroke.addPoint(Vector.from(this.mouseVec()));
+		this.elements.push(stroke);
+	}
 
-		this.paths.push([mouse]);
-		if (evt.button == MOUSE_BUTTONS.LMB) {
-			this.isDrawing = true;
-			this.history.clear();
+	private drawElements() {
+		for (const element of this.elements) {
+			element.draw(this.ctx);
+		}
+	}
+
+	private handleMouseDown(evt: MouseEvent) {
+		if (this.currentTool !== "hand") {
+			if (evt.button == MOUSE_BUTTONS.LMB && this.currentTool === "brush") {
+				this.createStrokeElement();
+				this.isDrawing = true;
+				this.history.clear();
+			}
 		}
 	}
 	private handleMouseUp(_evt: MouseEvent) {
@@ -176,9 +192,15 @@ class Canvas {
 		this.mouse.y = evt.offsetY;
 
 		if (this.isDrawing) {
-			let point = this.mouseVec();
-			let currPath = this.paths[this.paths.length - 1];
-			currPath.push(point);
+			const point = this.mouseVec();
+			if (this.elements.length <= 0) return;
+
+			const currentElement = this.elements[this.elements.length - 1];
+
+			if (currentElement && currentElement instanceof StrokeElement) {
+				// Add the point if it is a stroke element;
+				currentElement.addPoint(Vector.from(point));
+			}
 		}
 	}
 	private mouseVec(): Vec2 {
@@ -195,6 +217,10 @@ class Canvas {
 		} else if (CTRL && key === "z") {
 			this.history.undo();
 		}
+	}
+
+	private draw() {
+		this.drawElements();
 	}
 
 	private addEventListeners() {
@@ -215,10 +241,6 @@ class Canvas {
 		this.canvas.addEventListener("mouseup", mouseUpHandler);
 		this.canvas.addEventListener("mousemove", mouseMoveHandler);
 		document.addEventListener("keydown", keyDownHandler);
-	}
-
-	private draw() {
-		this.drawPaths();
 	}
 }
 
