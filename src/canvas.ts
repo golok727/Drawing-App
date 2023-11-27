@@ -1,6 +1,6 @@
 import UI from "./ui";
 import AppHistory from "./history";
-import Toolbar from "./toolbar";
+import Toolbar, { Tool } from "./toolbar";
 const MOUSE_BUTTONS = {
 	LMB: 0,
 	MMB: 1,
@@ -66,7 +66,12 @@ class Canvas {
 
 	private mouse: { x: number; y: number } = { x: 0, y: 0 };
 
-	private toolbar = new Toolbar();
+	private currentTool: Tool = "brush";
+
+	private toolbar = new Toolbar((tool) => {
+		this.currentTool = tool;
+		this.setCursor();
+	});
 
 	private refHandlers!: {
 		mouseDownHandler: (evt: MouseEvent) => void;
@@ -76,8 +81,8 @@ class Canvas {
 	};
 
 	constructor(container: HTMLElement) {
-		this.canvas.style.cursor = "url(/cursor.png), default";
-		this.canvas.className += "min-h-screen";
+		this.setCursor();
+		this.canvas.classList.add("min-h-screen");
 		// this.canvas.style.height = "100%";
 		// this.canvas.style.width = "100%";
 
@@ -98,6 +103,20 @@ class Canvas {
 		this.addEventListeners();
 		this.setupUI();
 	}
+
+	private setCursor() {
+		switch (this.currentTool) {
+			case "brush":
+				this.canvas.style.cursor = "url(/brush-cursor.png), default";
+				break;
+			case "eraser":
+				this.canvas.style.cursor = "url(/eraser-cursor.png), default";
+				break;
+			default:
+				break;
+		}
+	}
+
 	private setupUI() {
 		const { ui } = this;
 

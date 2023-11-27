@@ -14,8 +14,10 @@ class Toolbar {
 		...document.querySelectorAll("[data-tool]"),
 	] as HTMLAnchorElement[];
 
-	constructor() {
-		console.log(this.toolsElement);
+	private onToolChangeHandler?: (tool: Tool) => void;
+
+	constructor(onToolChange?: (tool: Tool) => void) {
+		this.onToolChangeHandler = onToolChange;
 		this.setTool(this.currentTool);
 		this.addEventListeners();
 	}
@@ -26,22 +28,24 @@ class Toolbar {
 		if (currentActiveTab) currentActiveTab.classList.remove("tab-active");
 
 		const newTab = document.querySelector(`[data-tool-name="${tool}"]`);
-		console.log(newTab);
 		if (!newTab) {
 			console.error(`Tool : '${this.currentTool}' is not found`);
 			return;
 		}
 		newTab.classList.add("tab-active");
+		if (this.onToolChangeHandler) this.onToolChangeHandler(tool);
 	}
 
 	getCurrentTool() {
 		return this.currentTool;
 	}
+
 	private handleClick = (evt: MouseEvent) => {
 		const tool = evt.currentTarget as HTMLAnchorElement;
 		const toolName = tool.dataset.toolName;
 		if (!toolName) return;
-		console.log(toolName);
+
+		this.setTool(toolName as Tool);
 	};
 	private addEventListeners() {
 		this.toolsElement.forEach((tool) => {
