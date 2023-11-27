@@ -1,50 +1,11 @@
 import UI from "./ui";
+import { getColor, COLORS } from "./utils";
 import AppHistory from "./history";
 import Toolbar, { Tool } from "./toolbar";
 const MOUSE_BUTTONS = {
 	LMB: 0,
 	MMB: 1,
 	RMB: 2,
-};
-
-const COLORS = {
-	BLACK: 0,
-	WHITE: 1,
-	RED: 2,
-	GREEN: 3,
-	BLUE: 4,
-	CYAN: 5,
-	YELLOW: 6,
-	HOT_PINK: 7,
-} as const;
-
-const getColor = (color: (typeof COLORS)[keyof typeof COLORS]) => {
-	switch (color) {
-		case COLORS.BLACK:
-			return "#000";
-		case COLORS.WHITE:
-			return "#ffffff";
-
-		case COLORS.RED:
-			return "#ff0000";
-
-		case COLORS.GREEN:
-			return "#00ff00";
-
-		case COLORS.BLUE:
-			return "#0000ff";
-
-		case COLORS.YELLOW:
-			return "#ffff00";
-
-		case COLORS.CYAN:
-			return "#00ffff";
-
-		case COLORS.HOT_PINK:
-			return "#FF69B4";
-		default:
-			return "#000";
-	}
 };
 
 export type Vec2 = [number, number];
@@ -68,11 +29,6 @@ class Canvas {
 
 	private currentTool: Tool = "brush";
 
-	private toolbar = new Toolbar((tool) => {
-		this.currentTool = tool;
-		this.setCursor();
-	});
-
 	private refHandlers!: {
 		mouseDownHandler: (evt: MouseEvent) => void;
 		mouseUpHandler: (evt: MouseEvent) => void;
@@ -81,6 +37,8 @@ class Canvas {
 	};
 
 	constructor(container: HTMLElement) {
+		this.setupToolBar();
+
 		this.setCursor();
 		this.canvas.classList.add("min-h-screen");
 		// this.canvas.style.height = "100%";
@@ -104,15 +62,55 @@ class Canvas {
 		this.setupUI();
 	}
 
+	destroy() {
+		const {
+			keyDownHandler,
+			mouseDownHandler,
+			mouseMoveHandler,
+			mouseUpHandler,
+		} = this.refHandlers;
+
+		this.canvas.removeEventListener("mousedown", mouseDownHandler);
+		this.canvas.removeEventListener("mouseup", mouseUpHandler);
+		this.canvas.removeEventListener("mousemove", mouseMoveHandler);
+		document.removeEventListener("keydown", keyDownHandler);
+	}
+
+	render() {
+		const { ctx } = this;
+		ctx.clearRect(0, 0, this.cWidth, this.cHeight);
+		this.draw();
+	}
+
+	private setupToolBar() {
+		new Toolbar((tool) => {
+			this.currentTool = tool;
+			this.setCursor();
+		});
+	}
 	private setCursor() {
 		switch (this.currentTool) {
 			case "brush":
-				this.canvas.style.cursor = "url(/brush-cursor.png), default";
+				this.canvas.style.cursor = "url(/brush-cursor.png), crosshair";
 				break;
+
 			case "eraser":
-				this.canvas.style.cursor = "url(/eraser-cursor.png), default";
+				this.canvas.style.cursor = "url(/eraser-cursor.png) 25 15, crosshair";
 				break;
-			default:
+
+			case "rect":
+			case "circle":
+			case "line":
+			case "texture":
+				this.canvas.style.cursor = "crosshair";
+				break;
+
+			case "highlighter":
+				this.canvas.style.cursor = "url(/laser-cursor.png) 20 15, crosshair";
+				break;
+
+			case "hand":
+				this.canvas.style.cursor = "grab";
 				break;
 		}
 	}
@@ -142,7 +140,7 @@ class Canvas {
 	}
 	private drawPath(path: Vec2[]) {
 		const { ctx } = this;
-		ctx.strokeStyle = getColor(COLORS.HOT_PINK);
+		ctx.strokeStyle = getColor(COLORS.GREEN);
 		ctx.lineWidth = 6;
 		ctx.lineJoin = "round";
 		ctx.lineCap = "round";
@@ -221,26 +219,6 @@ class Canvas {
 
 	private draw() {
 		this.drawPaths();
-	}
-
-	destroy() {
-		const {
-			keyDownHandler,
-			mouseDownHandler,
-			mouseMoveHandler,
-			mouseUpHandler,
-		} = this.refHandlers;
-
-		this.canvas.removeEventListener("mousedown", mouseDownHandler);
-		this.canvas.removeEventListener("mouseup", mouseUpHandler);
-		this.canvas.removeEventListener("mousemove", mouseMoveHandler);
-		document.removeEventListener("keydown", keyDownHandler);
-	}
-
-	render() {
-		const { ctx } = this;
-		ctx.clearRect(0, 0, this.cWidth, this.cHeight);
-		this.draw();
 	}
 }
 
