@@ -8,5 +8,5 @@ yarn dev
 npm run dev
 ```
 
-![Preview Image](assets/preview.png)
+![Preview Image](assets/preview_new.png)
 
