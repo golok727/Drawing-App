@@ -3,11 +3,10 @@ import Vector from "./vector";
 
 const defaultStyles = {
 	fillColor: COLORS.CYAN,
-	strokeColor: COLORS.CYAN,
+	strokeColor: COLORS.WHITE,
 	lineWidth: 10,
 	lineDash: [],
 };
-
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -73,7 +72,7 @@ export class RectangleElement extends CanvasElement {
 // Strokes
 export class StrokeElement extends CanvasElement {
 	private points: Vector[];
-
+	private taper = true;
 	constructor() {
 		super(ElementTypes.Stroke);
 		this.points = [];
@@ -81,6 +80,22 @@ export class StrokeElement extends CanvasElement {
 
 	addPoint(point: Vector) {
 		this.points.push(point);
+	}
+	smooth(factor: number = 1) {
+		for (let i = 0; i < factor; i++) this.postProcessPoints();
+	}
+
+	private postProcessPoints() {
+		let { points } = this;
+
+		const len = points.length;
+		if (len <= 2) return;
+
+		// Averaging algorithm
+		for (let i = 1; i < len - 1; i++) {
+			points[i].x = (points[i - 1].x + points[i].x + points[i + 1].x) / 3;
+			points[i].y = (points[i - 1].y + points[i].y + points[i + 1].y) / 3;
+		}
 	}
 
 	private drawStroke(ctx: CanvasRenderingContext2D) {

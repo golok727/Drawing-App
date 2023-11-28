@@ -127,7 +127,48 @@ class Canvas {
 		return [this.mouse.x, this.mouse.y];
 	}
 
-	/* Event Listeners */
+	/* Event Handlers  */
+	private handleMouseDown(evt: MouseEvent) {
+		if (!this.isCurrentTool("hand")) {
+			// Brush Mode
+			if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
+				this.renderer.beginStroke(Vector.from(this.getMouseLocation()));
+				this.isDrawing = true;
+				this.history.clear();
+			}
+		}
+	}
+	private handleMouseUp(evt: MouseEvent) {
+		this.isDrawing = false;
+
+		if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
+			this.renderer.endStroke();
+		}
+	}
+
+	private handleMouseMove(evt: MouseEvent) {
+		this.mouse.x = evt.offsetX;
+		this.mouse.y = evt.offsetY;
+
+		if (this.isDrawing && this.isCurrentTool("brush")) {
+			const point = this.getMouseLocation();
+			this.renderer.stroke(Vector.from(point));
+		}
+	}
+
+	private handleKeyDown(evt: KeyboardEvent) {
+		const key = evt.key.toLocaleLowerCase();
+		const CTRL = evt.ctrlKey;
+		const SHIFT = evt.shiftKey;
+
+		if (CTRL && SHIFT && key === "z") {
+			// TODO
+		} else if (CTRL && key === "z") {
+			// TODO
+		}
+	}
+
+	// Register Events
 	private addEventListeners() {
 		const mouseDownHandler = this.handleMouseDown.bind(this);
 		const mouseUpHandler = this.handleMouseUp.bind(this);
@@ -146,42 +187,6 @@ class Canvas {
 		this.canvas.addEventListener("mouseup", mouseUpHandler);
 		this.canvas.addEventListener("mousemove", mouseMoveHandler);
 		document.addEventListener("keydown", keyDownHandler);
-	}
-
-	private handleMouseDown(evt: MouseEvent) {
-		if (!this.isCurrentTool("hand")) {
-			// Brush Mode
-			if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
-				this.renderer.beginStroke(Vector.from(this.getMouseLocation()));
-				this.isDrawing = true;
-				this.history.clear();
-			}
-		}
-	}
-	private handleMouseUp(_evt: MouseEvent) {
-		this.isDrawing = false;
-	}
-
-	private handleMouseMove(evt: MouseEvent) {
-		this.mouse.x = evt.offsetX;
-		this.mouse.y = evt.offsetY;
-
-		if (this.isDrawing && this.isCurrentTool("brush")) {
-			const point = this.getMouseLocation();
-			this.renderer.makeStroke(Vector.from(point));
-		}
-	}
-
-	private handleKeyDown(evt: KeyboardEvent) {
-		const key = evt.key.toLocaleLowerCase();
-		const CTRL = evt.ctrlKey;
-		const SHIFT = evt.shiftKey;
-
-		if (CTRL && SHIFT && key === "z") {
-			// TODO
-		} else if (CTRL && key === "z") {
-			// TODO
-		}
 	}
 }
 

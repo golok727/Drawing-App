@@ -13,6 +13,10 @@ class Renderer {
 		return this.m_Elements;
 	}
 
+	private lastElement() {
+		return this.m_Elements[this.m_Elements.length - 1];
+	}
+
 	clear() {
 		this.m_Elements = [];
 	}
@@ -23,15 +27,26 @@ class Renderer {
 		stroke.addPoint(startPos);
 		this.m_Elements.push(stroke);
 	}
-	makeStroke(point: Vector) {
+
+	stroke(point: Vector) {
 		if (this.m_Elements.length <= 0) return;
 
-		const currentElement = this.m_Elements[this.m_Elements.length - 1];
+		const currentElement = this.lastElement();
 
 		if (currentElement && currentElement instanceof StrokeElement) {
 			currentElement.addPoint(point);
 		}
 	}
+	endStroke() {
+		if (this.m_Elements.length <= 0) return;
+
+		const currentElement = this.lastElement();
+
+		if (currentElement && currentElement instanceof StrokeElement) {
+			currentElement.smooth(2);
+		}
+	}
+
 	private drawElements() {
 		for (const element of this.elements) {
 			element.draw(this.ctx);
