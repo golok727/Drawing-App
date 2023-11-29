@@ -55,20 +55,19 @@ class Renderer {
 	}
 
 	Erase(point: [number, number]) {
-		this._elements.forEach((elem) => {
-			if (this._toDelete.has(elem)) return;
-
-			if (elem.checkIntersection(point, this.ctx)) {
-				elem.setStyles({ strokeColor: "#636363", fillColor: "#636363" });
-				this._toDelete.add(elem);
+		for (const element of this._elements) {
+			if (this._toDelete.has(element)) continue;
+			if (element.checkIntersection(point, this.ctx)) {
+				element.setStyles({ strokeColor: "#636363", fillColor: "#636363" });
+				this._toDelete.add(element);
 			}
-		});
+		}
 	}
 
 	onEraseEnd() {
-		this.elements.forEach((elem) => {
-			if (this._toDelete.has(elem)) elem.delete();
-		});
+		for (const element of this._elements) {
+			if (this._toDelete.has(element)) element.delete();
+		}
 
 		this._toDelete.clear();
 	}

@@ -25,7 +25,7 @@ class UI {
 				break;
 
 			case "eraser":
-				canvas.style.cursor = "url(/eraser-cursor.png) 25 15, crosshair";
+				canvas.style.cursor = "crosshair";
 				break;
 
 			case "rect":

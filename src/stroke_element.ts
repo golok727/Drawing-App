@@ -30,7 +30,7 @@ export class StrokeElement extends CanvasElement {
 		point: [number, number],
 		ctx: CanvasRenderingContext2D
 	): boolean {
-		return ctx.isPointInPath(this.computedPath, point[0], point[1]);
+		return ctx.isPointInPath(this.computedPath, point[0], point[1], "nonzero");
 	}
 
 	private generatePath() {

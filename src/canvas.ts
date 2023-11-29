@@ -153,7 +153,7 @@ class Canvas {
 			// Brush Mode
 			if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
 				this.renderer.onBeginStroke(Vector.from(this.getMouseLocation()), {
-					strokeColor: COLORS.CYAN,
+					strokeColor: COLORS.ORANGE,
 				});
 				this.startDrawing();
 				this.history.clear();
