@@ -1,35 +1,39 @@
 import CanvasElement from "./element";
 import { StrokeElement } from "./stroke_element";
+import { CanvasStyles } from "./styles";
+import Vector from "./vector";
 
 class Renderer {
 	private ctx: CanvasRenderingContext2D;
-	private m_Elements: CanvasElement[] = [];
+	private _elements: CanvasElement[] = [];
+
+	private _toDelete = new Set<CanvasElement>();
 
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.ctx = ctx;
 	}
 
 	get elements() {
-		return this.m_Elements;
+		return this._elements;
 	}
 
 	private lastElement() {
-		return this.m_Elements[this.m_Elements.length - 1];
+		return this._elements[this._elements.length - 1];
 	}
 
 	clear() {
-		this.m_Elements = [];
+		this._elements.splice(0, this._elements.length);
 	}
 
 	// For Stroke Elements
-	beginStroke(startPos: number[]) {
-		const stroke = new StrokeElement();
+	onBeginStroke(startPos: Vector, styles?: Partial<CanvasStyles>) {
+		const stroke = new StrokeElement(styles);
 		stroke.addPoint(startPos);
-		this.m_Elements.push(stroke);
+		this._elements.push(stroke);
 	}
 
-	stroke(point: number[]) {
-		if (this.m_Elements.length <= 0) return;
+	onStroke(point: Vector) {
+		if (this._elements.length <= 0) return;
 
 		const currentElement = this.lastElement();
 
@@ -37,18 +41,41 @@ class Renderer {
 			currentElement.addPoint(point);
 		}
 	}
-	endStroke() {
-		if (this.m_Elements.length <= 0) return;
+
+	onStrokeEnd() {
+		if (this._elements.length <= 0) return;
 
 		const currentElement = this.lastElement();
 
 		if (currentElement && currentElement instanceof StrokeElement) {
 			currentElement.setDone(true);
 		}
+
+		// Erase
+	}
+
+	Erase(point: [number, number]) {
+		this._elements.forEach((elem) => {
+			if (this._toDelete.has(elem)) return;
+
+			if (elem.checkIntersection(point, this.ctx)) {
+				elem.setStyles({ strokeColor: "#636363", fillColor: "#636363" });
+				this._toDelete.add(elem);
+			}
+		});
+	}
+
+	onEraseEnd() {
+		this.elements.forEach((elem) => {
+			if (this._toDelete.has(elem)) elem.delete();
+		});
+
+		this._toDelete.clear();
 	}
 
 	private drawElements() {
 		for (const element of this.elements) {
+			if (element.isDeleted) continue;
 			element.draw(this.ctx);
 		}
 	}

@@ -8,9 +8,16 @@ type Component = { element: Element; handlers: EventHandlers };
 class UI {
 	private components: { element: Element; handlers: EventHandlers }[] = [];
 	private isRegistered = false;
+	private navBackground = document.getElementById("nav-bg");
 
 	constructor() {}
 
+	enableNavEvents() {
+		this.navBackground?.classList.remove("pointer-events-none");
+	}
+	disableNavEvents() {
+		this.navBackground?.classList.add("pointer-events-none");
+	}
 	setCursor(canvas: HTMLCanvasElement, tool: Tool) {
 		switch (tool) {
 			case "brush":

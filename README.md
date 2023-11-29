@@ -9,4 +9,5 @@ npm run dev
 ```
 
 ![Preview Image](assets/preview_new.png)
+![Preview Image](assets/preview_2.png)
 

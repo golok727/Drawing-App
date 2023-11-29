@@ -3,6 +3,7 @@ import AppHistory from "./history";
 import { Tool } from "./toolbar";
 import Vector from "./vector";
 import Renderer from "./renderer";
+import { COLORS } from "./utils";
 
 const MOUSE_BUTTONS = {
 	LMB: 0,
@@ -16,8 +17,6 @@ class Canvas {
 	private ctx!: CanvasRenderingContext2D;
 	private cWidth!: number;
 	private cHeight!: number;
-	private centerX!: number;
-	private centerY!: number;
 
 	private renderer!: Renderer;
 
@@ -25,9 +24,8 @@ class Canvas {
 	private history: AppHistory = new AppHistory();
 
 	private isDrawing = false;
-
-	private isTransforming = false;
-	private isReadOnly = false;
+	private isErasing = false;
+	private isPanning = false;
 
 	private mouse: { x: number; y: number } = { x: 0, y: 0 };
 
@@ -68,6 +66,25 @@ class Canvas {
 		this.renderer.Render();
 	}
 
+	private startDrawing() {
+		this.isDrawing = true;
+	}
+	private endDrawing() {
+		this.isDrawing = false;
+	}
+	private startErasing() {
+		this.isErasing = true;
+	}
+	private endErasing() {
+		this.isErasing = false;
+	}
+	private startPan() {
+		this.isPanning = true;
+	}
+	private endPan() {
+		this.isPanning = false;
+	}
+
 	private setupCanvas(container: HTMLElement) {
 		this.ui.setCursor(this.canvas, this.currentTool);
 		this.canvas.classList.add("min-h-screen");
@@ -82,9 +99,6 @@ class Canvas {
 
 		this.canvas.width = this.cWidth;
 		this.canvas.height = this.cHeight;
-
-		this.centerX = this.cWidth / 2;
-		this.centerY = this.cHeight / 2;
 	}
 
 	private isCurrentTool(tool: Tool) {
@@ -122,37 +136,66 @@ class Canvas {
 			this.ui.setCursor(this.canvas, this.currentTool);
 		});
 	}
-
+	private setMouse(...pos: [number, number]) {
+		this.mouse.x = pos[0];
+		this.mouse.y = pos[1];
+	}
 	private getMouseLocation(): Vec2 {
 		return [this.mouse.x, this.mouse.y];
 	}
 
 	/* Event Handlers  */
 	private handleMouseDown(evt: MouseEvent) {
+		this.ui.disableNavEvents();
+		this.setMouse(evt.offsetX, evt.offsetY);
+
 		if (!this.isCurrentTool("selector")) {
 			// Brush Mode
 			if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
-				this.renderer.beginStroke(this.getMouseLocation());
-				this.isDrawing = true;
+				this.renderer.onBeginStroke(Vector.from(this.getMouseLocation()), {
+					strokeColor: COLORS.CYAN,
+				});
+				this.startDrawing();
 				this.history.clear();
+			}
+			// Eraser Mode
+			else if (
+				evt.button == MOUSE_BUTTONS.LMB &&
+				this.isCurrentTool("eraser")
+			) {
+				this.isErasing = true;
+				this.renderer.Erase(this.getMouseLocation());
 			}
 		}
 	}
-	private handleMouseUp(evt: MouseEvent) {
-		this.isDrawing = false;
+	// Mouse Move
+	private handleMouseMove(evt: MouseEvent) {
+		this.setMouse(evt.offsetX, evt.offsetY);
 
-		if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
-			this.renderer.endStroke();
+		// Draw
+		if (this.isDrawing && this.isCurrentTool("brush")) {
+			this.renderer.onStroke(Vector.from(this.getMouseLocation()));
+		}
+
+		// Erase
+		if (this.isErasing && this.isCurrentTool("eraser")) {
+			this.renderer.Erase(this.getMouseLocation());
 		}
 	}
+	// Mouse Up
+	private handleMouseUp(evt: MouseEvent) {
+		this.endDrawing();
+		this.endErasing();
 
-	private handleMouseMove(evt: MouseEvent) {
-		this.mouse.x = evt.offsetX;
-		this.mouse.y = evt.offsetY;
+		this.ui.enableNavEvents();
 
-		if (this.isDrawing && this.isCurrentTool("brush")) {
-			const point = this.getMouseLocation();
-			this.renderer.stroke(this.getMouseLocation());
+		// BrusH
+		if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
+			this.renderer.onStrokeEnd();
+		}
+		// Eraser
+		else if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("eraser")) {
+			this.renderer.onEraseEnd();
 		}
 	}
 

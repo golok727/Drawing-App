@@ -1,12 +1,6 @@
-import { COLORS } from "./utils";
+import { CanvasStyles, DefaultCanvasStyles } from "./styles";
+import { v4 as uuidv4 } from "uuid";
 import Vector from "./vector";
-
-const defaultStyles = {
-	fillColor: COLORS.CYAN,
-	strokeColor: COLORS.WHITE,
-	lineWidth: 10,
-	lineDash: [],
-};
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -20,13 +14,11 @@ type ElementType = (typeof ElementTypes)[keyof typeof ElementTypes];
 // type BoundingBox = { top: number; left: number; right: number; bottom: number };
 
 class CanvasElement {
-	id: string = Math.random().toString().replace(".", "");
+	id: string = uuidv4();
 	type: ElementType;
+	_isDeleted = false; // for easy history purposes
 
-	styles = {
-		...defaultStyles,
-	};
-
+	protected styles: CanvasStyles = { ...DefaultCanvasStyles };
 	private boundingBox: { topLeft: Vector; bottomRight: Vector };
 
 	constructor(type: ElementType) {
@@ -37,9 +29,23 @@ class CanvasElement {
 	protected calculateBoundingBox(): void {
 		console.log(this.boundingBox);
 	}
+
+	get isDeleted() {
+		return this._isDeleted;
+	}
+
+	delete() {
+		this._isDeleted = true;
+	}
+	recover() {
+		this._isDeleted = false;
+	}
 	// Use to get data saving
 	getData() {
 		console.warn("getData Should be implemented for data storage");
+	}
+	setStyles(newStyles: Partial<CanvasStyles>) {
+		this.styles = { ...this.styles, ...newStyles };
 	}
 
 	// Common method to render elements
@@ -48,6 +54,15 @@ class CanvasElement {
 			`The Draw method for ElementType: ${this.type} should be implemented separately`
 		);
 	}
+
+	checkIntersection(
+		_: [number, number],
+		_ctx: CanvasRenderingContext2D
+	): boolean {
+		return false;
+	}
+
+	serialize() {}
 }
 
 export class LineElement extends CanvasElement {
