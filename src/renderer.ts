@@ -1,5 +1,5 @@
-import CanvasElement, { StrokeElement } from "./element";
-import Vector from "./vector";
+import CanvasElement from "./element";
+import { StrokeElement } from "./stroke_element";
 
 class Renderer {
 	private ctx: CanvasRenderingContext2D;
@@ -22,13 +22,13 @@ class Renderer {
 	}
 
 	// For Stroke Elements
-	beginStroke(startPos: Vector) {
+	beginStroke(startPos: number[]) {
 		const stroke = new StrokeElement();
 		stroke.addPoint(startPos);
 		this.m_Elements.push(stroke);
 	}
 
-	stroke(point: Vector) {
+	stroke(point: number[]) {
 		if (this.m_Elements.length <= 0) return;
 
 		const currentElement = this.lastElement();
@@ -43,7 +43,7 @@ class Renderer {
 		const currentElement = this.lastElement();
 
 		if (currentElement && currentElement instanceof StrokeElement) {
-			currentElement.smooth(2);
+			currentElement.setDone(true);
 		}
 	}
 

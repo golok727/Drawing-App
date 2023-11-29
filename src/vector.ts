@@ -28,7 +28,9 @@ class Vector {
 	static equals(v1: Vector, v2: Vector) {
 		return v1.x === v2.x && v1.y === v2.y && v1.z === v2.z;
 	}
-
+	get2dArr() {
+		return [this.x, this.y];
+	}
 	add(other: Vector): Vector {
 		return new Vector(this.x + other.x, this.y + other.y, this.z + other.z);
 	}

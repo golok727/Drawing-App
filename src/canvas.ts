@@ -129,10 +129,10 @@ class Canvas {
 
 	/* Event Handlers  */
 	private handleMouseDown(evt: MouseEvent) {
-		if (!this.isCurrentTool("hand")) {
+		if (!this.isCurrentTool("selector")) {
 			// Brush Mode
 			if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
-				this.renderer.beginStroke(Vector.from(this.getMouseLocation()));
+				this.renderer.beginStroke(this.getMouseLocation());
 				this.isDrawing = true;
 				this.history.clear();
 			}
@@ -152,7 +152,7 @@ class Canvas {
 
 		if (this.isDrawing && this.isCurrentTool("brush")) {
 			const point = this.getMouseLocation();
-			this.renderer.stroke(Vector.from(point));
+			this.renderer.stroke(this.getMouseLocation());
 		}
 	}
 

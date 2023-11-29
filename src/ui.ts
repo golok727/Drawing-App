@@ -32,8 +32,8 @@ class UI {
 				canvas.style.cursor = "url(/laser-cursor.png) 20 15, crosshair";
 				break;
 
-			case "hand":
-				canvas.style.cursor = "grab";
+			case "selector":
+				canvas.style.cursor = "default";
 				break;
 		}
 	}

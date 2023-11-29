@@ -1,6 +1,6 @@
 export type Tool =
 	| "brush"
-	| "hand"
+	| "selector"
 	| "eraser"
 	| "rect"
 	| "texture"
@@ -44,7 +44,6 @@ class Toolbar {
 		const tool = evt.currentTarget as HTMLAnchorElement;
 		const toolName = tool.dataset.toolName;
 		if (!toolName) return;
-
 		this.setTool(toolName as Tool);
 	};
 	private addEventListeners() {
