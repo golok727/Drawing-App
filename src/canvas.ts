@@ -1,5 +1,5 @@
 import UI from "./ui";
-import AppHistory from "./history";
+import AppHistory, { HistoryAction, UndoOrRedo } from "./history";
 import { Tool } from "./toolbar";
 import Vector from "./vector";
 import Renderer from "./renderer";
@@ -111,21 +111,20 @@ class Canvas {
 		// Undo Button
 		ui.addComponent(document.querySelector("[data-undo-btn]")!, {
 			click: () => {
-				// TODO HISTORY
+				this.handleUndo();
 			},
 		});
 
 		// Redo Button
 		ui.addComponent(document.querySelector("[data-redo-btn]")!, {
 			click: () => {
-				// TODO HISTORY
+				this.handleRedo();
 			},
 		});
 
 		// Clear All Button
 		ui.addComponent(document.querySelector("[data-clear-all-btn]"!)!, {
 			click: () => {
-				// TODO HISTORY
 				this.renderer.clear();
 			},
 		});
@@ -203,20 +202,28 @@ class Canvas {
 			this.renderer.onEraseEnd();
 		}
 	}
+	private historyHandler(type: UndoOrRedo, action: HistoryAction) {
+		let rendererUndoRedoHandler =
+			type === "undo"
+				? this.renderer.applyUndo.bind(this.renderer)
+				: this.renderer.applyRedo.bind(this.renderer);
+
+		switch (action.type) {
+			case "add_element":
+			case "erase":
+			case "clear_all": {
+				rendererUndoRedoHandler(action);
+				break;
+			}
+		}
+	}
 
 	private handleUndo() {
 		const lastAction = this._history.undo();
 
 		if (!lastAction) return;
 
-		switch (lastAction.type) {
-			case "add_element":
-			case "erase":
-			case "clear_all": {
-				this.renderer.applyUndo(lastAction);
-				break;
-			}
-		}
+		this.historyHandler("undo", lastAction);
 	}
 
 	private handleRedo() {
@@ -224,14 +231,7 @@ class Canvas {
 
 		if (!lastAction) return;
 
-		switch (lastAction.type) {
-			case "add_element":
-			case "erase":
-			case "clear_all": {
-				this.renderer.applyRedo(lastAction);
-				break;
-			}
-		}
+		this.historyHandler("redo", lastAction);
 	}
 
 	private handleKeyDown(evt: KeyboardEvent) {

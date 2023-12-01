@@ -1,50 +1,62 @@
 import CanvasElement from "./element";
 import { Tool } from "./toolbar";
+export type UndoOrRedo = "undo" | "redo";
 
-interface AddElement {
-	type: "add_element";
+export namespace HistoryActions {
+	export interface AddElement {
+		type: "add_element";
 
-	element: CanvasElement;
+		element: CanvasElement;
+	}
+
+	export interface ClearAll {
+		type: "clear_all";
+
+		elements: CanvasElement[];
+	}
+
+	export interface Erase {
+		type: "erase";
+
+		elements: CanvasElement[];
+	}
+
+	export interface ToolChange {
+		type: "tool_change";
+
+		tool: Tool;
+	}
 }
 
-interface ClearAll {
-	type: "clear_all";
-
-	elements: CanvasElement[];
-}
-
-interface Erase {
-	type: "erase";
-
-	elements: CanvasElement[];
-}
-
-interface ToolChange {
-	type: "tool_change";
-
-	tool: Tool;
-}
-
-export type HistoryAction = AddElement | ClearAll | Erase | ToolChange;
+export type HistoryAction =
+	| HistoryActions.AddElement
+	| HistoryActions.ClearAll
+	| HistoryActions.Erase
+	| HistoryActions.ToolChange;
 
 class AppHistory {
 	private maxHistory;
 	private history: HistoryAction[] = [];
 	private redoStack: HistoryAction[] = [];
+	onOldestRemove: (oldestAction: HistoryAction) => void = () => {};
+	onRedoClear: (redoActions: HistoryAction[]) => void = () => {};
 
-	constructor(max: number = 40) {
+	constructor(max: number = 50) {
 		this.maxHistory = max;
 	}
 
 	private _add(action: HistoryAction) {
-		if (this.history.length > this.maxHistory) {
-			this.history.shift();
-		}
 		this.history.push(action);
+
+		if (this.history.length >= this.maxHistory) {
+			let oldest = this.history.shift();
+			if (oldest) this.onOldestRemove(oldest);
+		}
 	}
 
 	add(action: HistoryAction) {
 		this._add(action);
+		this.onRedoClear(this.redoStack);
 		this.redoStack = [];
 	}
 
@@ -57,12 +69,13 @@ class AppHistory {
 
 	redo() {
 		const lastAction = this.redoStack.pop();
-
 		if (lastAction) this.history.push(lastAction);
+
 		return lastAction;
 	}
 	clear(): void {
 		this.history = [];
+		this.redoStack = [];
 	}
 }
 

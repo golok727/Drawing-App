@@ -1,5 +1,9 @@
 import CanvasElement from "./element";
-import AppHistory, { HistoryAction } from "./history";
+import AppHistory, {
+	HistoryAction,
+	HistoryActions,
+	UndoOrRedo,
+} from "./history";
 import { StrokeElement } from "./stroke_element";
 import { CanvasStyles } from "./styles";
 import Vector from "./vector";
@@ -13,59 +17,28 @@ class Renderer {
 	constructor(ctx: CanvasRenderingContext2D, history: AppHistory) {
 		this.ctx = ctx;
 		this._history = history;
-	}
 
+		this._history.onOldestRemove = this.historyOnRemoveOldestChange.bind(this);
+		this._history.onRedoClear = this.historyOnRedoClear.bind(this);
+	}
 	get elements() {
 		return this._elements;
 	}
+	Render() {
+		this.drawElements();
+	}
 
 	applyUndo(action: HistoryAction) {
-		switch (action.type) {
-			case "add_element": {
-				this._elements.pop();
-				break;
-			}
-
-			case "erase": {
-				break;
-			}
-
-			case "clear_all": {
-				break;
-			}
-
-			default:
-				console.warn("Unspecified History action type");
-				break;
-		}
+		this.historyHandler("undo", action);
 	}
 
 	applyRedo(action: HistoryAction) {
-		switch (action.type) {
-			case "add_element": {
-				this._elements.push(action.element);
-				break;
-			}
-
-			case "erase": {
-				break;
-			}
-
-			case "clear_all": {
-				break;
-			}
-
-			default:
-				console.warn("Unspecified History action type");
-				break;
-		}
-	}
-
-	private lastElement() {
-		return this._elements[this._elements.length - 1];
+		this.historyHandler("redo", action);
 	}
 
 	clear() {
+		// Add the clear to history
+		this._history.add({ type: "clear_all", elements: [...this.elements] });
 		this._elements.splice(0, this._elements.length);
 	}
 
@@ -79,7 +52,7 @@ class Renderer {
 	onStroke(point: Vector) {
 		if (this._elements.length <= 0) return;
 
-		const currentElement = this.lastElement();
+		const currentElement = this.getLastElement();
 
 		if (currentElement && currentElement instanceof StrokeElement) {
 			currentElement.addPoint(point);
@@ -89,7 +62,7 @@ class Renderer {
 	onStrokeEnd() {
 		if (this._elements.length <= 0) return;
 
-		const currentElement = this.lastElement();
+		const currentElement = this.getLastElement();
 
 		if (currentElement && currentElement instanceof StrokeElement) {
 			currentElement.setDone(true);
@@ -126,10 +99,104 @@ class Renderer {
 			element.delete();
 		}
 
+		// History
 		if (this._toDelete.size)
 			this._history.add({ type: "erase", elements: [...this._toDelete] });
 
 		this._toDelete.clear();
+	}
+
+	private getLastElement() {
+		return this._elements[this._elements.length - 1];
+	}
+	private addElementAction(
+		type: UndoOrRedo,
+		action: HistoryActions.AddElement
+	) {
+		// Action handler for brush
+		switch (type) {
+			case "undo":
+				this._elements.pop();
+				break;
+			case "redo":
+				this._elements.push(action.element);
+				break;
+		}
+	}
+
+	private removeElement(element: CanvasElement) {
+		const index = this._elements.indexOf(element);
+		if (index !== -1) this.elements.splice(index, 1);
+	}
+
+	// Remove the elements from the elements array if the capacity has reached and the element to pop out the the history is deleted or not
+
+	private checkActionAndRemoveElements(action: HistoryAction) {
+		switch (action.type) {
+			case "erase":
+				for (const element of action.elements) {
+					if (element.isDeleted) this.removeElement(element);
+				}
+				break;
+		}
+	}
+
+	private historyOnRemoveOldestChange(oldest: HistoryAction) {
+		this.checkActionAndRemoveElements(oldest);
+	}
+
+	private historyOnRedoClear(redoActions: HistoryAction[]) {
+		for (const action of redoActions) {
+			this.checkActionAndRemoveElements(action);
+		}
+	}
+
+	private eraseAction(type: UndoOrRedo, action: HistoryActions.Erase) {
+		// Action handler for eraser
+		switch (type) {
+			case "undo": {
+				for (const element of action.elements) element.recover();
+				break;
+			}
+
+			case "redo": {
+				for (const element of action.elements) element.delete();
+				break;
+			}
+		}
+	}
+
+	private clearAllAction(type: UndoOrRedo, action: HistoryActions.ClearAll) {
+		// Action handler for clear all
+		switch (type) {
+			case "undo": {
+				this._elements = action.elements;
+				break;
+			}
+			case "redo": {
+				this.clear();
+			}
+		}
+	}
+
+	private historyHandler(type: "undo" | "redo", action: HistoryAction) {
+		switch (action.type) {
+			case "add_element":
+				this.addElementAction(type, action);
+				return;
+
+			case "erase":
+				this.eraseAction(type, action);
+				return;
+
+			case "clear_all":
+				this.clearAllAction(type, action);
+				return;
+
+			default:
+				console.warn("Unspecified History action type");
+				break;
+		}
 	}
 
 	private drawElements() {
@@ -137,10 +204,6 @@ class Renderer {
 			if (element.isDeleted) continue;
 			element.draw(this.ctx);
 		}
-	}
-
-	Render() {
-		this.drawElements();
 	}
 }
 
