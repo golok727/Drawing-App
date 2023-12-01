@@ -1,4 +1,5 @@
 import CanvasElement from "./element";
+import AppHistory, { HistoryAction } from "./history";
 import { StrokeElement } from "./stroke_element";
 import { CanvasStyles } from "./styles";
 import Vector from "./vector";
@@ -6,15 +7,58 @@ import Vector from "./vector";
 class Renderer {
 	private ctx: CanvasRenderingContext2D;
 	private _elements: CanvasElement[] = [];
-
+	private _history: AppHistory;
 	private _toDelete = new Set<CanvasElement>();
 
-	constructor(ctx: CanvasRenderingContext2D) {
+	constructor(ctx: CanvasRenderingContext2D, history: AppHistory) {
 		this.ctx = ctx;
+		this._history = history;
 	}
 
 	get elements() {
 		return this._elements;
+	}
+
+	applyUndo(action: HistoryAction) {
+		switch (action.type) {
+			case "add_element": {
+				this._elements.pop();
+				break;
+			}
+
+			case "erase": {
+				break;
+			}
+
+			case "clear_all": {
+				break;
+			}
+
+			default:
+				console.warn("Unspecified History action type");
+				break;
+		}
+	}
+
+	applyRedo(action: HistoryAction) {
+		switch (action.type) {
+			case "add_element": {
+				this._elements.push(action.element);
+				break;
+			}
+
+			case "erase": {
+				break;
+			}
+
+			case "clear_all": {
+				break;
+			}
+
+			default:
+				console.warn("Unspecified History action type");
+				break;
+		}
 	}
 
 	private lastElement() {
@@ -49,6 +93,12 @@ class Renderer {
 
 		if (currentElement && currentElement instanceof StrokeElement) {
 			currentElement.setDone(true);
+
+			// Add stroke to the history
+			this._history.add({
+				type: "add_element",
+				element: currentElement,
+			});
 		}
 
 		// Erase
@@ -64,10 +114,20 @@ class Renderer {
 		}
 	}
 
-	onEraseEnd() {
-		for (const element of this._elements) {
-			if (this._toDelete.has(element)) element.delete();
+	cancelEraser() {
+		for (const elem of this._toDelete) {
+			elem.revertToPreviousStyles();
 		}
+		this._toDelete.clear();
+	}
+
+	onEraseEnd() {
+		for (const element of this._toDelete) {
+			element.delete();
+		}
+
+		if (this._toDelete.size)
+			this._history.add({ type: "erase", elements: [...this._toDelete] });
 
 		this._toDelete.clear();
 	}

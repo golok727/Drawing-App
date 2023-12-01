@@ -18,7 +18,9 @@ class CanvasElement {
 	type: ElementType;
 	_isDeleted = false; // for easy history purposes
 
+	protected previousStyles: CanvasStyles = { ...DefaultCanvasStyles };
 	protected styles: CanvasStyles = { ...DefaultCanvasStyles };
+
 	private boundingBox: { topLeft: Vector; bottomRight: Vector };
 
 	constructor(type: ElementType) {
@@ -38,13 +40,21 @@ class CanvasElement {
 		this._isDeleted = true;
 	}
 	recover() {
+		this.revertToPreviousStyles();
 		this._isDeleted = false;
 	}
 	// Use to get data saving
 	getData() {
 		console.warn("getData Should be implemented for data storage");
 	}
+
+	revertToPreviousStyles() {
+		const temp = { ...this.previousStyles };
+		this.previousStyles = this.styles;
+		this.styles = temp;
+	}
 	setStyles(newStyles: Partial<CanvasStyles>) {
+		this.previousStyles = { ...this.styles };
 		this.styles = { ...this.styles, ...newStyles };
 	}
 

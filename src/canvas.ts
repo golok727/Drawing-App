@@ -21,7 +21,7 @@ class Canvas {
 	private renderer!: Renderer;
 
 	private ui = new UI();
-	private history: AppHistory = new AppHistory();
+	private _history = new AppHistory();
 
 	private isDrawing = false;
 	private isErasing = false;
@@ -43,7 +43,7 @@ class Canvas {
 		this.addEventListeners();
 		this.setupUI();
 
-		this.renderer = new Renderer(this.ctx);
+		this.renderer = new Renderer(this.ctx, this._history);
 	}
 
 	destroy() {
@@ -136,6 +136,13 @@ class Canvas {
 			this.ui.setCursor(this.canvas, this.currentTool);
 		});
 	}
+
+	private cancel() {
+		if (this.isErasing) this.renderer.cancelEraser();
+
+		this.endDrawing();
+		this.endErasing();
+	}
 	private setMouse(...pos: [number, number]) {
 		this.mouse.x = pos[0];
 		this.mouse.y = pos[1];
@@ -156,14 +163,13 @@ class Canvas {
 					strokeColor: COLORS.ORANGE,
 				});
 				this.startDrawing();
-				this.history.clear();
 			}
 			// Eraser Mode
 			else if (
 				evt.button == MOUSE_BUTTONS.LMB &&
 				this.isCurrentTool("eraser")
 			) {
-				this.isErasing = true;
+				this.startErasing();
 				this.renderer.Erase(this.getMouseLocation());
 			}
 		}
@@ -178,16 +184,15 @@ class Canvas {
 		}
 
 		// Erase
-		if (this.isErasing && this.isCurrentTool("eraser")) {
+		if (this.isCurrentTool("eraser") && this.isErasing) {
 			this.renderer.Erase(this.getMouseLocation());
 		}
 	}
 	// Mouse Up
 	private handleMouseUp(evt: MouseEvent) {
+		this.ui.enableNavEvents();
 		this.endDrawing();
 		this.endErasing();
-
-		this.ui.enableNavEvents();
 
 		// BrusH
 		if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
@@ -199,15 +204,49 @@ class Canvas {
 		}
 	}
 
+	private handleUndo() {
+		const lastAction = this._history.undo();
+
+		if (!lastAction) return;
+
+		switch (lastAction.type) {
+			case "add_element":
+			case "erase":
+			case "clear_all": {
+				this.renderer.applyUndo(lastAction);
+				break;
+			}
+		}
+	}
+
+	private handleRedo() {
+		const lastAction = this._history.redo();
+
+		if (!lastAction) return;
+
+		switch (lastAction.type) {
+			case "add_element":
+			case "erase":
+			case "clear_all": {
+				this.renderer.applyRedo(lastAction);
+				break;
+			}
+		}
+	}
+
 	private handleKeyDown(evt: KeyboardEvent) {
 		const key = evt.key.toLocaleLowerCase();
 		const CTRL = evt.ctrlKey;
 		const SHIFT = evt.shiftKey;
 
 		if (CTRL && SHIFT && key === "z") {
-			// TODO
+			// Redo
+			this.handleRedo();
 		} else if (CTRL && key === "z") {
-			// TODO
+			// Undo
+			this.handleUndo();
+		} else if (key === "escape") {
+			this.cancel();
 		}
 	}
 
