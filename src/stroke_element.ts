@@ -24,6 +24,26 @@ export class StrokeElement extends CanvasElement {
 	}
 	setDone(val: boolean) {
 		this._done = val;
+		this.calculateBoundingBox();
+	}
+	override calculateBoundingBox(): void {
+		if (this._points.length === 0) return;
+		let minX = this._points[0].x;
+		let minY = this._points[0].y;
+		let maxX = this._points[0].x;
+		let maxY = this._points[0].y;
+
+		for (const point of this._points) {
+			minX = Math.min(minX, point.x);
+			minY = Math.min(minY, point.y);
+			maxX = Math.max(maxX, point.x);
+			maxY = Math.max(maxY, point.y);
+		}
+
+		const width = maxX - minX;
+		const height = maxY - minY;
+
+		this._boundingBox = { x: minX, y: minY, width, height };
 	}
 
 	override checkIntersection(

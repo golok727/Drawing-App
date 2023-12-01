@@ -40,10 +40,10 @@ class Canvas {
 
 	constructor(container: HTMLElement) {
 		this.setupCanvas(container);
+		this.renderer = new Renderer(this.ctx, this._history);
+
 		this.addEventListeners();
 		this.setupUI();
-
-		this.renderer = new Renderer(this.ctx, this._history);
 	}
 
 	destroy() {
@@ -62,7 +62,9 @@ class Canvas {
 
 	render() {
 		const { ctx } = this;
+		this.ctx.fillStyle = "black";
 		ctx.clearRect(0, 0, this.cWidth, this.cHeight);
+		this.ctx.fillRect(0, 0, this.cWidth, this.cHeight);
 		this.renderer.Render();
 	}
 
@@ -130,9 +132,10 @@ class Canvas {
 		});
 
 		// Initialize the toolbar
-		ui.toolbarInit((tool) => {
+		ui.toolbarInit((tool: Tool) => {
 			this.currentTool = tool;
 			this.ui.setCursor(this.canvas, this.currentTool);
+			if (tool !== "selector") this.renderer.DeselectAll();
 		});
 	}
 
@@ -155,22 +158,27 @@ class Canvas {
 		this.ui.disableNavEvents();
 		this.setMouse(evt.offsetX, evt.offsetY);
 
-		if (!this.isCurrentTool("selector")) {
-			// Brush Mode
-			if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
-				this.renderer.onBeginStroke(Vector.from(this.getMouseLocation()), {
-					strokeColor: COLORS.ORANGE,
-				});
-				this.startDrawing();
-			}
-			// Eraser Mode
-			else if (
-				evt.button == MOUSE_BUTTONS.LMB &&
-				this.isCurrentTool("eraser")
-			) {
-				this.startErasing();
-				this.renderer.Erase(this.getMouseLocation());
-			}
+		if (this.isCurrentTool("selector")) {
+			this.renderer.DeselectAll();
+			const element = this.renderer.getIntersectingElement(
+				this.getMouseLocation()
+			);
+			if (element) this.renderer.Select(element);
+
+			return;
+		}
+
+		// Brush Mode
+		if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
+			this.renderer.onBeginStroke(Vector.from(this.getMouseLocation()), {
+				strokeColor: COLORS.ORANGE,
+			});
+			this.startDrawing();
+		}
+		// Eraser Mode
+		else if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("eraser")) {
+			this.startErasing();
+			this.renderer.Erase(this.getMouseLocation());
 		}
 	}
 	// Mouse Move

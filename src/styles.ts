@@ -10,7 +10,7 @@ export interface CanvasStyles {
 const DefaultCanvasStyles: CanvasStyles = {
 	fillColor: COLORS.WHITE,
 	strokeColor: COLORS.WHITE,
-	strokeWidth: 5,
+	strokeWidth: 7,
 	lineDash: [],
 };
 

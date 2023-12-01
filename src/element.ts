@@ -14,22 +14,36 @@ type ElementType = (typeof ElementTypes)[keyof typeof ElementTypes];
 // type BoundingBox = { top: number; left: number; right: number; bottom: number };
 
 class CanvasElement {
-	id: string = uuidv4();
+	protected _id: string = uuidv4();
 	type: ElementType;
 	_isDeleted = false; // for easy history purposes
 
 	protected previousStyles: CanvasStyles = { ...DefaultCanvasStyles };
 	protected styles: CanvasStyles = { ...DefaultCanvasStyles };
 
-	private boundingBox: { topLeft: Vector; bottomRight: Vector };
+	protected _boundingBox: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	};
 
 	constructor(type: ElementType) {
 		this.type = type;
-		this.boundingBox = { topLeft: new Vector(), bottomRight: new Vector() };
+		this._boundingBox = {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		};
 	}
 
-	protected calculateBoundingBox(): void {
-		console.log(this.boundingBox);
+	calculateBoundingBox(): void {
+		console.log(this._boundingBox);
+	}
+
+	get boundingBox() {
+		return this._boundingBox;
 	}
 
 	get isDeleted() {

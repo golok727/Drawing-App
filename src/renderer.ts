@@ -13,6 +13,7 @@ class Renderer {
 	private _elements: CanvasElement[] = [];
 	private _history: AppHistory;
 	private _toDelete = new Set<CanvasElement>();
+	private _Selected = new Set<CanvasElement>();
 
 	constructor(ctx: CanvasRenderingContext2D, history: AppHistory) {
 		this.ctx = ctx;
@@ -104,6 +105,27 @@ class Renderer {
 			this._history.add({ type: "erase", elements: [...this._toDelete] });
 
 		this._toDelete.clear();
+	}
+	// Select
+	getIntersectingElement(point: [number, number]) {
+		for (const element of this._elements) {
+			if (element.checkIntersection(point, this.ctx)) {
+				return element;
+			}
+		}
+		return null;
+	}
+
+	Select(element: CanvasElement) {
+		this._Selected.add(element);
+	}
+
+	Deselect(element: CanvasElement) {
+		this._Selected.delete(element);
+	}
+
+	DeselectAll() {
+		this._Selected.clear();
 	}
 
 	private getLastElement() {
@@ -203,7 +225,59 @@ class Renderer {
 		for (const element of this.elements) {
 			if (element.isDeleted) continue;
 			element.draw(this.ctx);
+			const box = element.boundingBox;
+			if (this._Selected.has(element)) this.__test_boundingBox(box);
 		}
+	}
+
+	private __test_boundingBox(box: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	}) {
+		this.ctx.strokeStyle = "hotpink";
+		this.ctx.lineWidth = 2;
+		this.ctx.beginPath();
+		this.ctx.setLineDash([4, 10]);
+		this.ctx.lineDashOffset = performance.now() / 100;
+		this.ctx.rect(box.x - 10, box.y - 10, box.width + 10, box.height + 10);
+		this.ctx.stroke();
+		this.ctx.setLineDash([]);
+
+		this.ctx.beginPath();
+		this.ctx.strokeStyle = "purple";
+		this.ctx.fillStyle = "black";
+		this.ctx.roundRect(box.x - 15, box.y - 15, 10, 10, 0.5);
+		this.ctx.stroke();
+		this.ctx.fill();
+
+		this.ctx.beginPath();
+		this.ctx.strokeStyle = "purple";
+		this.ctx.fillStyle = "black";
+		this.ctx.roundRect(box.x - 15, box.y + box.height - 5, 10, 10, 0.5);
+		this.ctx.stroke();
+		this.ctx.fill();
+
+		this.ctx.beginPath();
+		this.ctx.strokeStyle = "purple";
+		this.ctx.fillStyle = "black";
+		this.ctx.roundRect(
+			box.x + box.width - 5,
+			box.y + box.height - 5,
+			10,
+			10,
+			0.5
+		);
+		this.ctx.stroke();
+		this.ctx.fill();
+
+		this.ctx.beginPath();
+		this.ctx.strokeStyle = "purple";
+		this.ctx.fillStyle = "black";
+		this.ctx.roundRect(box.x + box.width - 5, box.y - 15, 10, 10, 0.5);
+		this.ctx.stroke();
+		this.ctx.fill();
 	}
 }
 
