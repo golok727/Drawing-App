@@ -49,6 +49,7 @@ class AppHistory {
 		this.history.push(action);
 
 		if (this.history.length >= this.maxHistory) {
+			// Todo check if the same action is is already in it or not or clone it so that it removes reference issues
 			let oldest = this.history.shift();
 			if (oldest) this.onOldestRemove(oldest);
 		}

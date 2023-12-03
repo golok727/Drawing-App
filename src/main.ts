@@ -1,12 +1,12 @@
 import "./styles/style.css";
-import Canvas from "./canvas";
+import Application from "./app";
 
-const canvas = new Canvas(
+const app = new Application(
 	document.getElementById("canvasContainer") as HTMLElement
 );
 
 const tick = () => {
-	canvas.render();
+	app.render();
 	requestAnimationFrame(tick);
 };
 

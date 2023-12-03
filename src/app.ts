@@ -4,6 +4,8 @@ import { Tool } from "./toolbar";
 import Vector from "./vector";
 import Renderer from "./renderer";
 import { COLORS } from "./utils";
+import Viewport from "./viewport";
+import Keyboard, { isPressedFn } from "./keyboard";
 
 const MOUSE_BUTTONS = {
 	LMB: 0,
@@ -12,60 +14,68 @@ const MOUSE_BUTTONS = {
 };
 
 export type Vec2 = [number, number];
-class Canvas {
+
+class Application {
 	private canvas: HTMLCanvasElement = document.createElement("canvas");
 	private ctx!: CanvasRenderingContext2D;
 	private cWidth!: number;
 	private cHeight!: number;
 
-	private renderer!: Renderer;
-
+	private renderer: Renderer;
 	private ui = new UI();
 	private _history = new AppHistory();
+	private keyboard;
+	private viewport: Viewport;
 
 	private isDrawing = false;
 	private isErasing = false;
 	private isPanning = false;
 
-	private mouse: { x: number; y: number } = { x: 0, y: 0 };
+	private mouse: Vector = new Vector(0);
 
-	private currentTool: Tool = "brush";
+	currentTool: Tool = "brush";
 
 	private refHandlers!: {
 		mouseDownHandler: (evt: MouseEvent) => void;
 		mouseUpHandler: (evt: MouseEvent) => void;
 		mouseMoveHandler: (evt: MouseEvent) => void;
-		keyDownHandler: (evt: KeyboardEvent) => void;
 	};
 
 	constructor(container: HTMLElement) {
 		this.setupCanvas(container);
+
 		this.renderer = new Renderer(this.ctx, this._history);
+		this.keyboard = new Keyboard(
+			this.handleKeyDown.bind(this),
+			this.handleKeyUp.bind(this)
+		);
+		this.viewport = new Viewport(this.ctx, this.keyboard, this, this.ui);
 
 		this.addEventListeners();
 		this.setupUI();
 	}
 
 	destroy() {
-		const {
-			keyDownHandler,
-			mouseDownHandler,
-			mouseMoveHandler,
-			mouseUpHandler,
-		} = this.refHandlers;
+		const { mouseDownHandler, mouseMoveHandler, mouseUpHandler } =
+			this.refHandlers;
 
 		this.canvas.removeEventListener("mousedown", mouseDownHandler);
 		this.canvas.removeEventListener("mouseup", mouseUpHandler);
 		this.canvas.removeEventListener("mousemove", mouseMoveHandler);
-		document.removeEventListener("keydown", keyDownHandler);
+		this.keyboard.destroy();
 	}
 
 	render() {
 		const { ctx } = this;
-		this.ctx.fillStyle = "black";
+
+		ctx.fillStyle = "black";
 		ctx.clearRect(0, 0, this.cWidth, this.cHeight);
-		this.ctx.fillRect(0, 0, this.cWidth, this.cHeight);
+		ctx.fillRect(0, 0, this.cWidth, this.cHeight);
+		ctx.save();
+		ctx.scale(1 / this.viewport.zoom, 1 / this.viewport.zoom);
 		this.renderer.Render();
+
+		ctx.restore();
 	}
 
 	private startDrawing() {
@@ -156,7 +166,9 @@ class Canvas {
 	/* Event Handlers  */
 	private handleMouseDown(evt: MouseEvent) {
 		this.ui.disableNavEvents();
-		this.setMouse(evt.offsetX, evt.offsetY);
+		this.setMouse(...this.viewport.getMouse(evt));
+
+		if (this.keyboard.isPressed("space")) return;
 
 		if (this.isCurrentTool("selector")) {
 			this.renderer.DeselectAll();
@@ -183,7 +195,8 @@ class Canvas {
 	}
 	// Mouse Move
 	private handleMouseMove(evt: MouseEvent) {
-		this.setMouse(evt.offsetX, evt.offsetY);
+		this.setMouse(...this.viewport.getMouse(evt));
+		if (this.keyboard.isPressed("space")) return;
 
 		// Draw
 		if (this.isDrawing && this.isCurrentTool("brush")) {
@@ -241,33 +254,29 @@ class Canvas {
 
 		this.historyHandler("redo", lastAction);
 	}
-
-	private handleKeyDown(evt: KeyboardEvent) {
-		const key = evt.key.toLocaleLowerCase();
-		const CTRL = evt.ctrlKey;
-		const SHIFT = evt.shiftKey;
-
-		if (CTRL && SHIFT && key === "z") {
-			// Redo
+	// Keyboard class handlers
+	private handleKeyDown(isKey: isPressedFn) {
+		if (isKey("z", { ctrl: true, shift: true })) {
 			this.handleRedo();
-		} else if (CTRL && key === "z") {
-			// Undo
+		}
+		if (isKey("z", { ctrl: true })) {
 			this.handleUndo();
-		} else if (key === "escape") {
+		}
+		if (isKey("escape")) {
 			this.cancel();
 		}
 	}
+	// Keyboard class Handlers
+	private handleKeyUp(isKey: isPressedFn) {}
 
 	// Register Events
 	private addEventListeners() {
 		const mouseDownHandler = this.handleMouseDown.bind(this);
 		const mouseUpHandler = this.handleMouseUp.bind(this);
 		const mouseMoveHandler = this.handleMouseMove.bind(this);
-		const keyDownHandler = this.handleKeyDown.bind(this);
 
 		this.refHandlers = {
 			...this.refHandlers,
-			keyDownHandler,
 			mouseDownHandler,
 			mouseMoveHandler,
 			mouseUpHandler,
@@ -276,8 +285,7 @@ class Canvas {
 		this.canvas.addEventListener("mousedown", mouseDownHandler);
 		this.canvas.addEventListener("mouseup", mouseUpHandler);
 		this.canvas.addEventListener("mousemove", mouseMoveHandler);
-		document.addEventListener("keydown", keyDownHandler);
 	}
 }
 
-export default Canvas;
+export default Application;
