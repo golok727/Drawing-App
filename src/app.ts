@@ -29,7 +29,6 @@ class Application {
 
 	private isDrawing = false;
 	private isErasing = false;
-	private isPanning = false;
 
 	private mouse: Vector = new Vector(0);
 
@@ -72,9 +71,10 @@ class Application {
 		ctx.clearRect(0, 0, this.cWidth, this.cHeight);
 		ctx.fillRect(0, 0, this.cWidth, this.cHeight);
 		ctx.save();
+		ctx.translate(this.viewport.center.x, this.viewport.center.y);
 		ctx.scale(1 / this.viewport.zoom, 1 / this.viewport.zoom);
+		ctx.translate(this.viewport.offset.x, this.viewport.offset.y);
 		this.renderer.Render();
-
 		ctx.restore();
 	}
 
@@ -89,12 +89,6 @@ class Application {
 	}
 	private endErasing() {
 		this.isErasing = false;
-	}
-	private startPan() {
-		this.isPanning = true;
-	}
-	private endPan() {
-		this.isPanning = false;
 	}
 
 	private setupCanvas(container: HTMLElement) {
@@ -166,7 +160,7 @@ class Application {
 	/* Event Handlers  */
 	private handleMouseDown(evt: MouseEvent) {
 		this.ui.disableNavEvents();
-		this.setMouse(...this.viewport.getMouse(evt));
+		this.setMouse(...this.viewport.getMouse(evt).getVec2Arr());
 
 		if (this.keyboard.isPressed("space")) return;
 
@@ -195,7 +189,7 @@ class Application {
 	}
 	// Mouse Move
 	private handleMouseMove(evt: MouseEvent) {
-		this.setMouse(...this.viewport.getMouse(evt));
+		this.setMouse(...this.viewport.getMouse(evt).getVec2Arr());
 		if (this.keyboard.isPressed("space")) return;
 
 		// Draw
@@ -262,12 +256,15 @@ class Application {
 		if (isKey("z", { ctrl: true })) {
 			this.handleUndo();
 		}
+		if (isKey("0", { ctrl: true })) {
+			this.viewport.reset();
+		}
 		if (isKey("escape")) {
 			this.cancel();
 		}
 	}
 	// Keyboard class Handlers
-	private handleKeyUp(isKey: isPressedFn) {}
+	private handleKeyUp(_isKey: isPressedFn) {}
 
 	// Register Events
 	private addEventListeners() {
