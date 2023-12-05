@@ -1,5 +1,5 @@
 import Application from "./app";
-import Keyboard, { isPressedFn } from "./keyboard";
+import Keyboard, { AppKeyboardEvent } from "./keyboard";
 import UI from "./ui";
 import Vector from "./vector";
 
@@ -9,7 +9,7 @@ class Viewport {
 	private app: Application;
 	private keyboard: Keyboard;
 
-	center: Vector;
+	public center: Vector;
 	private _zoom = 1;
 	private _offset: Vector;
 
@@ -39,22 +39,27 @@ class Viewport {
 		this.addEventListeners();
 	}
 
-	get zoom() {
+	public get zoom() {
 		return this._zoom;
 	}
-	get offset() {
+	public get offset() {
 		return this._offset.add(this.drag.offset);
 	}
 
-	resetZoom() {
+	public resetZoom() {
 		this._zoom = 1;
 	}
 
-	reset() {
+	public reset() {
 		this.resetZoom();
 		this._offset = this.center.multiplyScalar(-1);
 	}
-	getMouse(evt: MouseEvent) {
+
+	public zoomCanvas(direction: number, step = 0.1) {
+		this._zoom = Math.max(0, Math.min(5, this._zoom + direction * step));
+	}
+
+	public getMouse(evt: MouseEvent) {
 		return new Vector(evt.offsetX, evt.offsetY)
 			.subtract(this.center)
 			.multiplyScalar(this._zoom)
@@ -69,13 +74,13 @@ class Viewport {
 			active: false,
 		};
 	}
-	private onPanStart(isPressed: isPressedFn) {
-		if (isPressed("space") && !this.drag.active) {
+	private onPanStart(evt: AppKeyboardEvent) {
+		if (evt.isPressed("space") && !this.drag.active) {
 			this.canvas.style.cursor = "grab";
 		}
 	}
-	private onPanEnd(_: any, key: string) {
-		if (key === "space") {
+	private onPanEnd(evt: AppKeyboardEvent) {
+		if (evt.key === "space") {
 			this.ui.setCursor(this.canvas, this.app.currentTool);
 			this.drag.active = false;
 			this._offset = this._offset.add(this.drag.offset);
@@ -114,8 +119,7 @@ class Viewport {
 
 	private handleWheel(evt: WheelEvent) {
 		const direction = Math.sign(evt.deltaY);
-		const step = 0.1;
-		this._zoom = Math.max(0, Math.min(5, this._zoom + direction * step));
+		this.zoomCanvas(direction);
 	}
 }
 export default Viewport;

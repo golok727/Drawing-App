@@ -1,16 +1,18 @@
 import { Keys } from "./utils";
 
 type ModifierKeys = { ctrl: boolean; shift: boolean; alt: boolean };
-type KeyboardEventHandler = (
-	isPressed: isPressedFn,
-	key: Keys | string,
-	evt: KeyboardEvent
-) => void;
+type KeyboardEventHandler = (event: AppKeyboardEvent) => void;
 
 export type isPressedFn = (
 	key: Keys | string,
 	modifiers?: Partial<ModifierKeys>
 ) => boolean;
+
+export type AppKeyboardEvent = {
+	native: KeyboardEvent;
+	isPressed: isPressedFn;
+	key: Keys | string;
+};
 
 const modifiersDefault: ModifierKeys = {
 	ctrl: false,
@@ -41,14 +43,14 @@ class Keyboard {
 		this.addEventListeners();
 	}
 
-	destroy() {
+	public destroy() {
 		document.removeEventListener("keydown", this.refHandlers.keyDownHandler);
 		document.removeEventListener("keyup", this.refHandlers.keyUpHandler);
 		this.onKeyDownHandlers = [];
 		this.onKeyUpHandlers = [];
 	}
 
-	isPressed(key: Keys | string, modifiers?: Partial<ModifierKeys>) {
+	public isPressed(key: Keys | string, modifiers?: Partial<ModifierKeys>) {
 		modifiers = {
 			...modifiersDefault,
 			...modifiers,
@@ -57,7 +59,7 @@ class Keyboard {
 		return !!this.keys[key] && this.compareModifiers(modifiers as ModifierKeys);
 	}
 
-	on(when: "keydown" | "keyup", handler: KeyboardEventHandler) {
+	public on(when: "keydown" | "keyup", handler: KeyboardEventHandler) {
 		switch (when) {
 			case "keydown":
 				this.onKeyDownHandlers.push(handler);
@@ -94,18 +96,28 @@ class Keyboard {
 		this.keys[key] = isKeyDown;
 		return key;
 	}
-
+	private makeEvent(
+		native: KeyboardEvent,
+		custom: { key: string }
+	): AppKeyboardEvent {
+		const event: AppKeyboardEvent = {
+			native,
+			...custom,
+			isPressed: this.isPressed.bind(this),
+		};
+		return event;
+	}
 	private handleKeyDown(evt: KeyboardEvent) {
 		const key = this.handleKeyChange(evt, true);
 
 		for (const handler of this.onKeyDownHandlers)
-			handler(this.isPressed.bind(this), key, evt);
+			handler(this.makeEvent(evt, { key }));
 	}
 
 	private handleKeyUp(evt: KeyboardEvent) {
 		const key = this.handleKeyChange(evt, false);
 		for (const handler of this.onKeyUpHandlers) {
-			handler(this.isPressed.bind(this), key, evt);
+			handler(this.makeEvent(evt, { key }));
 		}
 	}
 

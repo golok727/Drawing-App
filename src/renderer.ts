@@ -1,3 +1,4 @@
+import BoundingBox from "./bounding-box";
 import CanvasElement from "./element";
 import AppHistory, {
 	HistoryAction,
@@ -230,54 +231,22 @@ class Renderer {
 		}
 	}
 
-	private __test_boundingBox(box: {
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-	}) {
+	private __test_boundingBox(box: BoundingBox) {
+		const padding = 10;
+
 		this.ctx.strokeStyle = "hotpink";
 		this.ctx.lineWidth = 2;
 		this.ctx.beginPath();
 		this.ctx.setLineDash([4, 10]);
 		this.ctx.lineDashOffset = performance.now() / 100;
-		this.ctx.rect(box.x - 10, box.y - 10, box.width + 10, box.height + 10);
-		this.ctx.stroke();
-		this.ctx.setLineDash([]);
-
-		this.ctx.beginPath();
-		this.ctx.strokeStyle = "purple";
-		this.ctx.fillStyle = "black";
-		this.ctx.roundRect(box.x - 15, box.y - 15, 10, 10, 0.5);
-		this.ctx.stroke();
-		this.ctx.fill();
-
-		this.ctx.beginPath();
-		this.ctx.strokeStyle = "purple";
-		this.ctx.fillStyle = "black";
-		this.ctx.roundRect(box.x - 15, box.y + box.height - 5, 10, 10, 0.5);
-		this.ctx.stroke();
-		this.ctx.fill();
-
-		this.ctx.beginPath();
-		this.ctx.strokeStyle = "purple";
-		this.ctx.fillStyle = "black";
-		this.ctx.roundRect(
-			box.x + box.width - 5,
-			box.y + box.height - 5,
-			10,
-			10,
-			0.5
+		this.ctx.rect(
+			box.x - padding,
+			box.y - padding,
+			box.w + 2 * padding,
+			box.h + 2 * padding
 		);
 		this.ctx.stroke();
-		this.ctx.fill();
-
-		this.ctx.beginPath();
-		this.ctx.strokeStyle = "purple";
-		this.ctx.fillStyle = "black";
-		this.ctx.roundRect(box.x + box.width - 5, box.y - 15, 10, 10, 0.5);
-		this.ctx.stroke();
-		this.ctx.fill();
+		this.ctx.setLineDash([]);
 	}
 }
 

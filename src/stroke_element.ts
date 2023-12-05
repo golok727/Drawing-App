@@ -3,6 +3,7 @@ import { getStroke } from "perfect-freehand";
 import { getSvgPathFromStroke } from "./utils";
 import Vector from "./vector";
 import { CanvasStyles } from "./styles";
+import BoundingBox from "./bounding-box";
 
 type BrushTypes = "normal" | "tapered";
 // Strokes
@@ -19,14 +20,14 @@ export class StrokeElement extends CanvasElement {
 		}
 	}
 
-	addPoint(point: Vector) {
+	public addPoint(point: Vector) {
 		this._points.push(point);
 	}
-	setDone(val: boolean) {
+	public setDone(val: boolean) {
 		this._done = val;
 		this.calculateBoundingBox();
 	}
-	override calculateBoundingBox(): void {
+	public override calculateBoundingBox(): void {
 		if (this._points.length === 0) return;
 		let minX = this._points[0].x;
 		let minY = this._points[0].y;
@@ -43,7 +44,8 @@ export class StrokeElement extends CanvasElement {
 		const width = maxX - minX;
 		const height = maxY - minY;
 
-		this._boundingBox = { x: minX, y: minY, width, height };
+		this._boundingBox = new BoundingBox(minX, minY, width, height);
+		console.log(this._boundingBox);
 	}
 
 	override checkIntersection(

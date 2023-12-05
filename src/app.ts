@@ -5,7 +5,7 @@ import Vector from "./vector";
 import Renderer from "./renderer";
 import { COLORS } from "./utils";
 import Viewport from "./viewport";
-import Keyboard, { isPressedFn } from "./keyboard";
+import Keyboard, { AppKeyboardEvent } from "./keyboard";
 
 const MOUSE_BUTTONS = {
 	LMB: 0,
@@ -249,22 +249,34 @@ class Application {
 		this.historyHandler("redo", lastAction);
 	}
 	// Keyboard class handlers
-	private handleKeyDown(isKey: isPressedFn) {
-		if (isKey("z", { ctrl: true, shift: true })) {
+	private handleKeyDown(evt: AppKeyboardEvent) {
+		const { isPressed } = evt;
+		if (isPressed("z", { ctrl: true, shift: true })) {
 			this.handleRedo();
 		}
-		if (isKey("z", { ctrl: true })) {
+
+		if (isPressed("z", { ctrl: true })) {
 			this.handleUndo();
 		}
-		if (isKey("0", { ctrl: true })) {
+
+		if (isPressed("0", { ctrl: true })) {
 			this.viewport.reset();
 		}
-		if (isKey("escape")) {
+
+		if (isPressed("escape")) {
 			this.cancel();
+		}
+
+		if (isPressed("=")) {
+			this.viewport.zoomCanvas(-1);
+		}
+
+		if (isPressed("-")) {
+			this.viewport.zoomCanvas(1);
 		}
 	}
 	// Keyboard class Handlers
-	private handleKeyUp(_isKey: isPressedFn) {}
+	private handleKeyUp(_evt: AppKeyboardEvent) {}
 
 	// Register Events
 	private addEventListeners() {

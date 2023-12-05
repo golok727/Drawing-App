@@ -1,6 +1,7 @@
 import { CanvasStyles, DefaultCanvasStyles } from "./styles";
 import { v4 as uuidv4 } from "uuid";
 import Vector from "./vector";
+import BoundingBox from "./bounding-box";
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -15,32 +16,18 @@ type ElementType = (typeof ElementTypes)[keyof typeof ElementTypes];
 
 class CanvasElement {
 	protected _id: string = uuidv4();
-	type: ElementType;
-	_isDeleted = false; // for easy history purposes
+	public type: ElementType;
+	public _isDeleted = false; // for easy history purposes
 
 	protected previousStyles: CanvasStyles = { ...DefaultCanvasStyles };
 	protected styles: CanvasStyles = { ...DefaultCanvasStyles };
 
-	protected _boundingBox: {
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-	};
-
+	protected _boundingBox = new BoundingBox(0, 0, 0, 0);
 	constructor(type: ElementType) {
 		this.type = type;
-		this._boundingBox = {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		};
 	}
 
-	calculateBoundingBox(): void {
-		console.log(this._boundingBox);
-	}
+	public calculateBoundingBox(): void {}
 
 	get boundingBox() {
 		return this._boundingBox;
