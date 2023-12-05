@@ -67,8 +67,8 @@ class CanvasElement {
 		);
 	}
 
-	checkIntersection(_: Vector, _ctx: CanvasRenderingContext2D): boolean {
-		return false;
+	checkIntersection(point: Vector, _ctx: CanvasRenderingContext2D): boolean {
+		return this._boundingBox.isIntersecting(point);
 	}
 
 	serialize() {}
@@ -83,13 +83,6 @@ export class LineElement extends CanvasElement {
 
 		this.begin = Vector.from(begin);
 		this.end = Vector.from(end);
-	}
-}
-
-// Circle
-export class CircleElement extends CanvasElement {
-	constructor() {
-		super(ElementTypes.Circle);
 	}
 }
 

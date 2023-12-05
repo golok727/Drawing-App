@@ -205,6 +205,14 @@ class Application {
 					0.5
 				);
 			}
+			// Circle
+			else if (this.isCurrentTool("circle")) {
+				this.renderer.BeginCircle(this.getMouseLocation(), {
+					fillColor: COLORS.NONE,
+					strokeColor: COLORS.RED,
+					strokeWidth: 7,
+				});
+			}
 		}
 	}
 	// Mouse Move
@@ -232,6 +240,10 @@ class Application {
 				this.keyboard.isPressed("", { shift: true })
 			);
 		}
+
+		if (this.isCurrentTool("circle") && this.drag.isDragging()) {
+			this.renderer.DrawCircle(this.drag);
+		}
 	}
 	// Mouse Up
 	private handlePointerUp(evt: MouseEvent) {
@@ -251,6 +263,10 @@ class Application {
 
 			if (this.isCurrentTool("rect")) {
 				this.renderer.RectEnd();
+			}
+
+			if (this.isCurrentTool("circle")) {
+				this.renderer.EndCircle();
 			}
 		}
 		if (this.drag.isDragging()) this.drag.stop();

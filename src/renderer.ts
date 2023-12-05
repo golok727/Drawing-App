@@ -10,6 +10,7 @@ import { CanvasStyles } from "./styles";
 import Vector from "./vector";
 import Drag from "./drag";
 import RectangleElement from "./elements/rect_element";
+import CircleElement from "./elements/circle_element";
 
 class Renderer {
 	private ctx: CanvasRenderingContext2D;
@@ -72,10 +73,7 @@ class Renderer {
 			strokeElem.setDone(true);
 			strokeElem.calculateBoundingBox();
 			// Add stroke to the history
-			this._history.add({
-				type: "add_element",
-				element: strokeElem,
-			});
+			this.addElementToHistory(strokeElem);
 		}
 	}
 	// Rectangle
@@ -122,27 +120,35 @@ class Renderer {
 		if (rectangleElem && rectangleElem instanceof RectangleElement) {
 			rectangleElem.calculateBoundingBox();
 
-			this._history.add({
-				type: "add_element",
-				element: rectangleElem,
-			});
+			this.addElementToHistory(rectangleElem);
+		}
+	}
+	// Circle
+	public BeginCircle(point: Vector, styles?: Partial<CanvasStyles>) {
+		const circle = new CircleElement(point);
+		if (styles) circle.setStyles(styles);
+
+		this._elements.push(circle);
+	}
+
+	public DrawCircle(drag: Drag) {
+		if (this._elements.length <= 0) return;
+
+		const circleElem = this.getLastElement();
+
+		if (circleElem && circleElem instanceof CircleElement) {
+			circleElem.setRadius(drag.offset.magnitude());
 		}
 	}
 
-	// Erase
-	public Erase(point: Vector) {
-		const elementsNearCurrentPoint = this._elements.filter((elem) =>
-			elem.boundingBox.isIntersecting(point)
-		);
-		for (const element of elementsNearCurrentPoint) {
-			if (this._toDelete.has(element)) continue;
-			if (element.checkIntersection(point, this.ctx)) {
-				element.setStyles({
-					strokeColor: "rgba(86, 86, 86, 0.40)",
-					fillColor: "rgba(86, 86, 86, 0.40)",
-				});
-				this._toDelete.add(element);
-			}
+	public EndCircle() {
+		if (this._elements.length <= 0) return;
+
+		const circleElem = this.getLastElement();
+
+		if (circleElem && circleElem instanceof CircleElement) {
+			circleElem.calculateBoundingBox();
+			this.addElementToHistory(circleElem);
 		}
 	}
 
@@ -151,6 +157,23 @@ class Renderer {
 			elem.revertToPreviousStyles();
 		}
 		this._toDelete.clear();
+	}
+
+	// Erase
+	public Erase(point: Vector) {
+		const elementsNearCurrentPoint = this.getNearestBoundingElements(point);
+
+		for (const element of elementsNearCurrentPoint) {
+			if (this._toDelete.has(element)) continue;
+
+			if (element.checkIntersection(point, this.ctx)) {
+				element.setStyles({
+					strokeColor: "rgba(86, 86, 86, 0.40)",
+					fillColor: "rgba(86, 86, 86, 0.40)",
+				});
+				this._toDelete.add(element);
+			}
+		}
 	}
 
 	public onEraseEnd() {
@@ -186,9 +209,15 @@ class Renderer {
 		this._Selected.clear();
 	}
 
+	private getNearestBoundingElements(point: Vector) {
+		return this._elements.filter((elem) =>
+			elem.boundingBox.isIntersecting(point)
+		);
+	}
 	private getLastElement() {
 		return this._elements[this._elements.length - 1];
 	}
+
 	private addElementAction(
 		type: UndoOrRedo,
 		action: HistoryActions.AddElement
@@ -219,6 +248,12 @@ class Renderer {
 				}
 				break;
 		}
+	}
+	private addElementToHistory(element: CanvasElement) {
+		this._history.add({
+			type: "add_element",
+			element: element,
+		});
 	}
 
 	private historyOnRemoveOldestChange(oldest: HistoryAction) {
