@@ -1,11 +1,11 @@
 import BoundingBox from "./bounding-box";
-import CanvasElement from "./element";
+import CanvasElement from "./elements/element";
 import AppHistory, {
 	HistoryAction,
 	HistoryActions,
 	UndoOrRedo,
 } from "./history";
-import { StrokeElement } from "./stroke_element";
+import { StrokeElement } from "./elements/stroke_element";
 import { CanvasStyles } from "./styles";
 import Vector from "./vector";
 
@@ -23,35 +23,35 @@ class Renderer {
 		this._history.onOldestRemove = this.historyOnRemoveOldestChange.bind(this);
 		this._history.onRedoClear = this.historyOnRedoClear.bind(this);
 	}
-	get elements() {
+	public get elements() {
 		return this._elements;
 	}
-	Render() {
+	public Render() {
 		this.drawElements();
 	}
 
-	applyUndo(action: HistoryAction) {
+	public applyUndo(action: HistoryAction) {
 		this.historyHandler("undo", action);
 	}
 
-	applyRedo(action: HistoryAction) {
+	public applyRedo(action: HistoryAction) {
 		this.historyHandler("redo", action);
 	}
 
-	clear() {
+	public clear() {
 		// Add the clear to history
 		this._history.add({ type: "clear_all", elements: [...this.elements] });
 		this._elements.splice(0, this._elements.length);
 	}
 
 	// For Stroke Elements
-	onBeginStroke(startPos: Vector, styles?: Partial<CanvasStyles>) {
+	public onBeginStroke(startPos: Vector, styles?: Partial<CanvasStyles>) {
 		const stroke = new StrokeElement(styles);
 		stroke.addPoint(startPos);
 		this._elements.push(stroke);
 	}
 
-	onStroke(point: Vector) {
+	public onStroke(point: Vector) {
 		if (this._elements.length <= 0) return;
 
 		const currentElement = this.getLastElement();
@@ -61,7 +61,7 @@ class Renderer {
 		}
 	}
 
-	onStrokeEnd() {
+	public onStrokeEnd() {
 		if (this._elements.length <= 0) return;
 
 		const currentElement = this.getLastElement();
@@ -79,7 +79,7 @@ class Renderer {
 		// Erase
 	}
 
-	Erase(point: [number, number]) {
+	public Erase(point: [number, number]) {
 		for (const element of this._elements) {
 			if (this._toDelete.has(element)) continue;
 			if (element.checkIntersection(point, this.ctx)) {
@@ -89,14 +89,14 @@ class Renderer {
 		}
 	}
 
-	cancelEraser() {
+	public cancelEraser() {
 		for (const elem of this._toDelete) {
 			elem.revertToPreviousStyles();
 		}
 		this._toDelete.clear();
 	}
 
-	onEraseEnd() {
+	public onEraseEnd() {
 		for (const element of this._toDelete) {
 			element.delete();
 		}
@@ -108,7 +108,7 @@ class Renderer {
 		this._toDelete.clear();
 	}
 	// Select
-	getIntersectingElement(point: [number, number]) {
+	public getIntersectingElement(point: [number, number]) {
 		for (const element of this._elements) {
 			if (element.checkIntersection(point, this.ctx)) {
 				return element;
@@ -117,15 +117,15 @@ class Renderer {
 		return null;
 	}
 
-	Select(element: CanvasElement) {
+	public Select(element: CanvasElement) {
 		this._Selected.add(element);
 	}
 
-	Deselect(element: CanvasElement) {
+	public Deselect(element: CanvasElement) {
 		this._Selected.delete(element);
 	}
 
-	DeselectAll() {
+	public DeselectAll() {
 		this._Selected.clear();
 	}
 

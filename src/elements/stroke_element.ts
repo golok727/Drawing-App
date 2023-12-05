@@ -1,9 +1,9 @@
 import CanvasElement, { ElementTypes } from "./element";
 import { getStroke } from "perfect-freehand";
-import { getSvgPathFromStroke } from "./utils";
-import Vector from "./vector";
-import { CanvasStyles } from "./styles";
-import BoundingBox from "./bounding-box";
+import { getSvgPathFromStroke } from "../utils";
+import Vector from "../vector";
+import { CanvasStyles } from "../styles";
+import BoundingBox from "../bounding-box";
 
 type BrushTypes = "normal" | "tapered";
 // Strokes
@@ -45,7 +45,6 @@ export class StrokeElement extends CanvasElement {
 		const height = maxY - minY;
 
 		this._boundingBox = new BoundingBox(minX, minY, width, height);
-		console.log(this._boundingBox);
 	}
 
 	override checkIntersection(
@@ -59,8 +58,10 @@ export class StrokeElement extends CanvasElement {
 		const outlinePoints = getStroke(this._points, {
 			simulatePressure: false,
 			size: this.styles.strokeWidth,
-			smoothing: 0.7,
-			end: { taper: 3 },
+			thinning: 0.6,
+			smoothing: 0.5,
+			streamline: 0.5,
+			easing: (t) => Math.sin((t * Math.PI) / 2), // https://easings.net/#easeOutSine
 		});
 		const pathData = getSvgPathFromStroke(outlinePoints);
 		this.computedPath = new Path2D(pathData);

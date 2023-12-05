@@ -1,7 +1,7 @@
-import { CanvasStyles, DefaultCanvasStyles } from "./styles";
+import { CanvasStyles, DefaultCanvasStyles } from "../styles";
 import { v4 as uuidv4 } from "uuid";
-import Vector from "./vector";
-import BoundingBox from "./bounding-box";
+import Vector from "../vector";
+import BoundingBox from "../bounding-box";
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -11,8 +11,6 @@ export const ElementTypes = {
 } as const;
 
 type ElementType = (typeof ElementTypes)[keyof typeof ElementTypes];
-
-// type BoundingBox = { top: number; left: number; right: number; bottom: number };
 
 class CanvasElement {
 	protected _id: string = uuidv4();
@@ -62,9 +60,10 @@ class CanvasElement {
 	}
 
 	// Common method to render elements
-	draw(_: CanvasRenderingContext2D): void {
+	draw(ctx: CanvasRenderingContext2D): void {
 		console.warn(
-			`The Draw method for ElementType: ${this.type} should be implemented separately`
+			`The Draw method for ElementType: ${this.type} should be implemented separately\n CTX:`,
+			ctx
 		);
 	}
 
@@ -87,13 +86,6 @@ export class LineElement extends CanvasElement {
 
 		this.begin = Vector.from(begin);
 		this.end = Vector.from(end);
-	}
-}
-
-// Rectangles
-export class RectangleElement extends CanvasElement {
-	constructor() {
-		super(ElementTypes.Rect);
 	}
 }
 

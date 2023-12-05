@@ -35,9 +35,9 @@ class Application {
 	currentTool: Tool = "brush";
 
 	private refHandlers!: {
-		mouseDownHandler: (evt: MouseEvent) => void;
-		mouseUpHandler: (evt: MouseEvent) => void;
-		mouseMoveHandler: (evt: MouseEvent) => void;
+		pointerDownHandler: (evt: PointerEvent) => void;
+		pointerUpHandler: (evt: PointerEvent) => void;
+		pointerMoveHandler: (evt: PointerEvent) => void;
 	};
 
 	constructor(container: HTMLElement) {
@@ -55,12 +55,12 @@ class Application {
 	}
 
 	destroy() {
-		const { mouseDownHandler, mouseMoveHandler, mouseUpHandler } =
+		const { pointerDownHandler, pointerMoveHandler, pointerUpHandler } =
 			this.refHandlers;
 
-		this.canvas.removeEventListener("mousedown", mouseDownHandler);
-		this.canvas.removeEventListener("mouseup", mouseUpHandler);
-		this.canvas.removeEventListener("mousemove", mouseMoveHandler);
+		this.canvas.removeEventListener("pointerdown", pointerDownHandler);
+		this.canvas.removeEventListener("pointerup", pointerUpHandler);
+		this.canvas.removeEventListener("pointermove", pointerMoveHandler);
 		this.keyboard.destroy();
 	}
 
@@ -158,7 +158,7 @@ class Application {
 	}
 
 	/* Event Handlers  */
-	private handleMouseDown(evt: MouseEvent) {
+	private handlePointerDown(evt: MouseEvent) {
 		this.ui.disableNavEvents();
 		this.setMouse(...this.viewport.getMouse(evt).getVec2Arr());
 
@@ -177,7 +177,7 @@ class Application {
 		// Brush Mode
 		if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
 			this.renderer.onBeginStroke(Vector.from(this.getMouseLocation()), {
-				strokeColor: COLORS.ORANGE,
+				strokeColor: COLORS.WHITE,
 			});
 			this.startDrawing();
 		}
@@ -188,7 +188,7 @@ class Application {
 		}
 	}
 	// Mouse Move
-	private handleMouseMove(evt: MouseEvent) {
+	private handlePointerMove(evt: MouseEvent) {
 		this.setMouse(...this.viewport.getMouse(evt).getVec2Arr());
 		if (this.keyboard.isPressed("space")) return;
 
@@ -203,7 +203,7 @@ class Application {
 		}
 	}
 	// Mouse Up
-	private handleMouseUp(evt: MouseEvent) {
+	private handlePointerUp(evt: MouseEvent) {
 		this.ui.enableNavEvents();
 		this.endDrawing();
 		this.endErasing();
@@ -280,20 +280,20 @@ class Application {
 
 	// Register Events
 	private addEventListeners() {
-		const mouseDownHandler = this.handleMouseDown.bind(this);
-		const mouseUpHandler = this.handleMouseUp.bind(this);
-		const mouseMoveHandler = this.handleMouseMove.bind(this);
+		const pointerDownHandler = this.handlePointerDown.bind(this);
+		const pointerUpHandler = this.handlePointerUp.bind(this);
+		const pointerMoveHandler = this.handlePointerMove.bind(this);
 
 		this.refHandlers = {
 			...this.refHandlers,
-			mouseDownHandler,
-			mouseMoveHandler,
-			mouseUpHandler,
+			pointerDownHandler,
+			pointerMoveHandler,
+			pointerUpHandler,
 		};
 
-		this.canvas.addEventListener("mousedown", mouseDownHandler);
-		this.canvas.addEventListener("mouseup", mouseUpHandler);
-		this.canvas.addEventListener("mousemove", mouseMoveHandler);
+		this.canvas.addEventListener("pointerdown", pointerDownHandler);
+		this.canvas.addEventListener("pointerup", pointerUpHandler);
+		this.canvas.addEventListener("mousemove", pointerMoveHandler);
 	}
 }
 

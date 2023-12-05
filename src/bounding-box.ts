@@ -37,6 +37,18 @@ class BoundingBox {
 	public get right() {
 		return this.x + this.w;
 	}
+
+	public isIntersecting(point: Vector) {
+		if (
+			point.x >= this.x &&
+			point.x <= this.x + this.w &&
+			point.y >= this.y &&
+			point.y <= this.y + this.h
+		) {
+			return true;
+		}
+		return false;
+	}
 }
 
 export default BoundingBox;

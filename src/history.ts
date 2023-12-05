@@ -1,4 +1,4 @@
-import CanvasElement from "./element";
+import CanvasElement from "./elements/element";
 import { Tool } from "./toolbar";
 export type UndoOrRedo = "undo" | "redo";
 
