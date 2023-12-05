@@ -67,10 +67,7 @@ class CanvasElement {
 		);
 	}
 
-	checkIntersection(
-		_: [number, number],
-		_ctx: CanvasRenderingContext2D
-	): boolean {
+	checkIntersection(_: Vector, _ctx: CanvasRenderingContext2D): boolean {
 		return false;
 	}
 

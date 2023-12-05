@@ -48,10 +48,10 @@ export class StrokeElement extends CanvasElement {
 	}
 
 	override checkIntersection(
-		point: [number, number],
+		point: Vector,
 		ctx: CanvasRenderingContext2D
 	): boolean {
-		return ctx.isPointInPath(this.computedPath, point[0], point[1], "nonzero");
+		return ctx.isPointInPath(this.computedPath, point.x, point.y, "nonzero");
 	}
 
 	private generatePath() {

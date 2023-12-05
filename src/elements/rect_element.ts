@@ -28,7 +28,7 @@ class RectangleElement extends CanvasElement {
 	}
 
 	public override checkIntersection(
-		point: [number, number],
+		point: Vector,
 		_ctx: CanvasRenderingContext2D
 	): boolean {
 		const p = Vector.from(point);

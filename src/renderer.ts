@@ -130,8 +130,11 @@ class Renderer {
 	}
 
 	// Erase
-	public Erase(point: [number, number]) {
-		for (const element of this._elements) {
+	public Erase(point: Vector) {
+		const elementsNearCurrentPoint = this._elements.filter((elem) =>
+			elem.boundingBox.isIntersecting(point)
+		);
+		for (const element of elementsNearCurrentPoint) {
 			if (this._toDelete.has(element)) continue;
 			if (element.checkIntersection(point, this.ctx)) {
 				element.setStyles({
@@ -162,7 +165,7 @@ class Renderer {
 		this._toDelete.clear();
 	}
 	// Select
-	public getIntersectingElement(point: [number, number]) {
+	public getIntersectingElement(point: Vector) {
 		for (const element of this._elements) {
 			if (element.checkIntersection(point, this.ctx)) {
 				return element;

@@ -173,7 +173,7 @@ class Application {
 		if (this.isCurrentTool("selector")) {
 			this.renderer.DeselectAll();
 			const element = this.renderer.getIntersectingElement(
-				this.getMouseLocation().getVec2Arr()
+				this.getMouseLocation()
 			);
 			if (element) this.renderer.Select(element);
 
@@ -190,7 +190,7 @@ class Application {
 			// Eraser Mode
 			else if (this.isCurrentTool("eraser")) {
 				this.startErasing();
-				this.renderer.Erase(this.getMouseLocation().getVec2Arr());
+				this.renderer.Erase(this.getMouseLocation());
 			}
 
 			// Rectangle
@@ -200,7 +200,7 @@ class Application {
 					{
 						fillColor: COLORS.NONE,
 						strokeColor: COLORS.RED,
-						strokeWidth: 4,
+						strokeWidth: 7,
 					},
 					0.5
 				);
@@ -223,7 +223,7 @@ class Application {
 
 		// Erase
 		if (this.isCurrentTool("eraser") && this.isErasing) {
-			this.renderer.Erase(this.getMouseLocation().getVec2Arr());
+			this.renderer.Erase(this.getMouseLocation());
 		}
 
 		if (this.isCurrentTool("rect") && this.drag.isDragging()) {
