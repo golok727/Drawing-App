@@ -6,6 +6,7 @@ import Renderer from "./renderer";
 import { COLORS } from "./utils";
 import Viewport from "./viewport";
 import Keyboard, { AppKeyboardEvent } from "./keyboard";
+import Drag from "./drag";
 
 const MOUSE_BUTTONS = {
 	LMB: 0,
@@ -31,6 +32,8 @@ class Application {
 	private isErasing = false;
 
 	private mouse: Vector = new Vector(0);
+
+	private drag = new Drag();
 
 	currentTool: Tool = "brush";
 
@@ -149,9 +152,9 @@ class Application {
 		this.endDrawing();
 		this.endErasing();
 	}
-	private setMouse(...pos: [number, number]) {
-		this.mouse.x = pos[0];
-		this.mouse.y = pos[1];
+	private setMouse(newPos: Vector) {
+		this.mouse.x = newPos.x;
+		this.mouse.y = newPos.y;
 	}
 	private getMouseLocation(): Vec2 {
 		return [this.mouse.x, this.mouse.y];
@@ -159,10 +162,13 @@ class Application {
 
 	/* Event Handlers  */
 	private handlePointerDown(evt: MouseEvent) {
-		this.ui.disableNavEvents();
-		this.setMouse(...this.viewport.getMouse(evt).getVec2Arr());
+		this.ui.disableNavigationBarPointerEvents();
+		this.setMouse(this.viewport.getMouse(evt));
 
 		if (this.keyboard.isPressed("space")) return;
+
+		// For drag Ones
+		this.drag.dragStart(this.mouse.clone());
 
 		if (this.isCurrentTool("selector")) {
 			this.renderer.DeselectAll();
@@ -189,11 +195,15 @@ class Application {
 	}
 	// Mouse Move
 	private handlePointerMove(evt: MouseEvent) {
-		this.setMouse(...this.viewport.getMouse(evt).getVec2Arr());
+		this.setMouse(this.viewport.getMouse(evt));
+
 		if (this.keyboard.isPressed("space")) return;
 
+		// Dragger
+		this.drag.dragTo(this.mouse.clone());
+
 		// Draw
-		if (this.isDrawing && this.isCurrentTool("brush")) {
+		if (this.isCurrentTool("brush") && this.isDrawing) {
 			this.renderer.onStroke(Vector.from(this.getMouseLocation()));
 		}
 
@@ -216,6 +226,8 @@ class Application {
 		else if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("eraser")) {
 			this.renderer.onEraseEnd();
 		}
+
+		if (this.drag.isDragging()) this.drag.stop();
 	}
 	private historyHandler(type: UndoOrRedo, action: HistoryAction) {
 		let rendererUndoRedoHandler =

@@ -14,7 +14,7 @@ class Viewport {
 	private _zoom = 1;
 	private _offset: Vector;
 
-	private drag = new Drag();
+	private dragState = new Drag();
 
 	constructor(
 		ctx: CanvasRenderingContext2D,
@@ -24,7 +24,7 @@ class Viewport {
 	) {
 		this.canvas = ctx.canvas;
 		this.center = new Vector(this.canvas.width / 2, this.canvas.height / 2);
-		this._offset = this.center.multiplyScalar(-1);
+		this._offset = this.center.scale(-1);
 
 		this.ui = ui;
 		this.keyboard = keyboard;
@@ -39,7 +39,7 @@ class Viewport {
 		return this._zoom;
 	}
 	public get offset() {
-		return this._offset.add(this.drag.offset);
+		return this._offset.add(this.dragState.offset);
 	}
 
 	public resetZoom() {
@@ -48,7 +48,7 @@ class Viewport {
 
 	public reset() {
 		this.resetZoom();
-		this._offset = this.center.multiplyScalar(-1);
+		this._offset = this.center.scale(-1);
 	}
 
 	public zoomCanvas(direction: number, step = 0.1) {
@@ -58,21 +58,20 @@ class Viewport {
 	public getMouse(evt: MouseEvent) {
 		return new Vector(evt.offsetX, evt.offsetY)
 			.subtract(this.center)
-			.multiplyScalar(this._zoom)
+			.scale(this._zoom)
 			.subtract(this._offset);
 	}
 
 	private onPanStart(evt: AppKeyboardEvent) {
-		if (evt.isPressed("space") && !this.drag.active) {
+		if (evt.isPressed("space") && !this.dragState.isDragging()) {
 			this.canvas.style.cursor = "grab";
 		}
 	}
 	private onPanEnd(evt: AppKeyboardEvent) {
 		if (evt.key === "space") {
 			this.ui.setCursor(this.canvas, this.app.currentTool);
-			this.drag.setActive(false);
-			this._offset = this._offset.add(this.drag.offset);
-			this.drag.reset();
+			this._offset = this._offset.add(this.dragState.offset);
+			this.dragState.stop();
 		}
 	}
 
@@ -92,22 +91,18 @@ class Viewport {
 	private handlePointerDown(evt: PointerEvent) {
 		if (this.keyboard.isPressed("space") && evt.button == 0) {
 			this.canvas.style.cursor = "grabbing";
-			this.drag.setStart(this.getMouse(evt));
-			this.drag.setActive(true);
+			this.dragState.dragStart(this.getMouse(evt));
 		}
 	}
 	private handlePointerMove(evt: PointerEvent) {
-		if (this.drag.active) {
-			this.drag.setEnd(this.getMouse(evt));
-		}
+		this.dragState.dragTo(this.getMouse(evt));
 	}
 
 	private handlePointerUp(_: PointerEvent) {
-		if (this.drag.active) {
+		if (this.dragState.isDragging()) {
 			this.canvas.style.cursor = "grab";
-
-			this._offset = this._offset.add(this.drag.offset);
-			this.drag.reset();
+			this._offset = this._offset.add(this.dragState.offset);
+			this.dragState.stop();
 		}
 	}
 

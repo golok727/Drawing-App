@@ -1,27 +1,29 @@
 import Vector from "./vector";
 
 class Drag {
-	public start = new Vector(0);
-	public end = new Vector(0);
+	private start = new Vector(0);
+	private end = new Vector(0);
 	public offset = new Vector(0);
-	public active = false;
+	private active = false;
 
 	constructor() {}
 
-	public setStart(start: Vector) {
+	public dragStart(start: Vector) {
 		this.start = start;
+		this.active = true;
 	}
 
-	public setActive(active: boolean) {
-		this.active = active;
+	public dragTo(end: Vector) {
+		if (this.active) {
+			this.end = end;
+			this.offset = this.end.subtract(this.start);
+		}
+	}
+	public isDragging() {
+		return this.active;
 	}
 
-	public setEnd(end: Vector) {
-		this.end = end;
-		this.offset = this.end.subtract(this.start);
-	}
-
-	public reset() {
+	public stop() {
 		this.start = new Vector(0);
 		this.end = new Vector(0);
 		this.offset = new Vector(0);

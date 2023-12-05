@@ -25,8 +25,13 @@ class Vector {
 	static clone(other: Vector) {
 		return Vector.from(other);
 	}
+
 	static equals(v1: Vector, v2: Vector) {
 		return v1.x === v2.x && v1.y === v2.y && v1.z === v2.z;
+	}
+
+	clone() {
+		return Vector.from(this);
 	}
 
 	equals(other: Vector) {
@@ -44,7 +49,7 @@ class Vector {
 		return new Vector(this.x - other.x, this.y - other.y, this.z - other.z);
 	}
 
-	multiplyScalar(scalar: number): Vector {
+	scale(scalar: number): Vector {
 		return new Vector(this.x * scalar, this.y * scalar, this.z * scalar);
 	}
 
