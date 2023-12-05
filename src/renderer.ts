@@ -8,6 +8,8 @@ import AppHistory, {
 import { StrokeElement } from "./elements/stroke_element";
 import { CanvasStyles } from "./styles";
 import Vector from "./vector";
+import Drag from "./drag";
+import RectangleElement from "./elements/rect_element";
 
 class Renderer {
 	private ctx: CanvasRenderingContext2D;
@@ -54,36 +56,88 @@ class Renderer {
 	public onStroke(point: Vector) {
 		if (this._elements.length <= 0) return;
 
-		const currentElement = this.getLastElement();
+		const strokeElem = this.getLastElement();
 
-		if (currentElement && currentElement instanceof StrokeElement) {
-			currentElement.addPoint(point);
+		if (strokeElem && strokeElem instanceof StrokeElement) {
+			strokeElem.addPoint(point);
 		}
 	}
 
 	public onStrokeEnd() {
 		if (this._elements.length <= 0) return;
 
-		const currentElement = this.getLastElement();
+		const strokeElem = this.getLastElement();
 
-		if (currentElement && currentElement instanceof StrokeElement) {
-			currentElement.setDone(true);
-
+		if (strokeElem && strokeElem instanceof StrokeElement) {
+			strokeElem.setDone(true);
+			strokeElem.calculateBoundingBox();
 			// Add stroke to the history
 			this._history.add({
 				type: "add_element",
-				element: currentElement,
+				element: strokeElem,
 			});
 		}
+	}
+	// Rectangle
 
-		// Erase
+	/**
+	 * Call Within the mouse down
+	 */
+	public BeginRect(
+		startPos: Vector,
+		styles?: Partial<CanvasStyles>,
+		borderRadius = 0.3
+	) {
+		const rect = new RectangleElement(
+			startPos.x,
+			startPos.y,
+			0,
+			0,
+			borderRadius
+		);
+		if (styles) rect.setStyles(styles);
+
+		this._elements.push(rect);
 	}
 
+	/**
+	 * Call Within the mouse move
+	 */
+	public DrawRect(drag: Drag, proportional = false) {
+		if (this._elements.length <= 0) return;
+		const rectangleElem = this.getLastElement();
+
+		if (rectangleElem && rectangleElem instanceof RectangleElement) {
+			const { x: dx, y: dy } = drag.offset;
+			rectangleElem.width = dx;
+			rectangleElem.height = proportional ? dx : dy;
+		}
+	}
+
+	public RectEnd() {
+		if (this._elements.length <= 0) return;
+
+		const rectangleElem = this.getLastElement();
+
+		if (rectangleElem && rectangleElem instanceof RectangleElement) {
+			rectangleElem.calculateBoundingBox();
+
+			this._history.add({
+				type: "add_element",
+				element: rectangleElem,
+			});
+		}
+	}
+
+	// Erase
 	public Erase(point: [number, number]) {
 		for (const element of this._elements) {
 			if (this._toDelete.has(element)) continue;
 			if (element.checkIntersection(point, this.ctx)) {
-				element.setStyles({ strokeColor: "#636363", fillColor: "#636363" });
+				element.setStyles({
+					strokeColor: "rgba(86, 86, 86, 0.40)",
+					fillColor: "rgba(86, 86, 86, 0.40)",
+				});
 				this._toDelete.add(element);
 			}
 		}

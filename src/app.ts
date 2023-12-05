@@ -156,8 +156,8 @@ class Application {
 		this.mouse.x = newPos.x;
 		this.mouse.y = newPos.y;
 	}
-	private getMouseLocation(): Vec2 {
-		return [this.mouse.x, this.mouse.y];
+	private getMouseLocation(): Vector {
+		return this.mouse.clone();
 	}
 
 	/* Event Handlers  */
@@ -173,24 +173,38 @@ class Application {
 		if (this.isCurrentTool("selector")) {
 			this.renderer.DeselectAll();
 			const element = this.renderer.getIntersectingElement(
-				this.getMouseLocation()
+				this.getMouseLocation().getVec2Arr()
 			);
 			if (element) this.renderer.Select(element);
 
 			return;
 		}
+		if (evt.button === MOUSE_BUTTONS.LMB) {
+			// Brush Mode
+			if (this.isCurrentTool("brush")) {
+				this.renderer.onBeginStroke(this.mouse.clone(), {
+					strokeColor: COLORS.WHITE,
+				});
+				this.startDrawing();
+			}
+			// Eraser Mode
+			else if (this.isCurrentTool("eraser")) {
+				this.startErasing();
+				this.renderer.Erase(this.getMouseLocation().getVec2Arr());
+			}
 
-		// Brush Mode
-		if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
-			this.renderer.onBeginStroke(Vector.from(this.getMouseLocation()), {
-				strokeColor: COLORS.WHITE,
-			});
-			this.startDrawing();
-		}
-		// Eraser Mode
-		else if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("eraser")) {
-			this.startErasing();
-			this.renderer.Erase(this.getMouseLocation());
+			// Rectangle
+			else if (this.isCurrentTool("rect")) {
+				this.renderer.BeginRect(
+					this.getMouseLocation(),
+					{
+						fillColor: COLORS.NONE,
+						strokeColor: COLORS.RED,
+						strokeWidth: 4,
+					},
+					0.5
+				);
+			}
 		}
 	}
 	// Mouse Move
@@ -209,7 +223,14 @@ class Application {
 
 		// Erase
 		if (this.isCurrentTool("eraser") && this.isErasing) {
-			this.renderer.Erase(this.getMouseLocation());
+			this.renderer.Erase(this.getMouseLocation().getVec2Arr());
+		}
+
+		if (this.isCurrentTool("rect") && this.drag.isDragging()) {
+			this.renderer.DrawRect(
+				this.drag,
+				this.keyboard.isPressed("", { shift: true })
+			);
 		}
 	}
 	// Mouse Up
@@ -218,17 +239,24 @@ class Application {
 		this.endDrawing();
 		this.endErasing();
 
-		// BrusH
-		if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("brush")) {
-			this.renderer.onStrokeEnd();
-		}
-		// Eraser
-		else if (evt.button == MOUSE_BUTTONS.LMB && this.isCurrentTool("eraser")) {
-			this.renderer.onEraseEnd();
-		}
+		// Brush
+		if (evt.button === MOUSE_BUTTONS.LMB) {
+			if (this.isCurrentTool("brush")) {
+				this.renderer.onStrokeEnd();
+			}
+			// Eraser
+			if (this.isCurrentTool("eraser")) {
+				this.renderer.onEraseEnd();
+			}
 
+			if (this.isCurrentTool("rect")) {
+				this.renderer.RectEnd();
+			}
+		}
 		if (this.drag.isDragging()) this.drag.stop();
 	}
+
+	// History handle
 	private historyHandler(type: UndoOrRedo, action: HistoryAction) {
 		let rendererUndoRedoHandler =
 			type === "undo"

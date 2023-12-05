@@ -55,6 +55,7 @@ class Keyboard {
 			...modifiersDefault,
 			...modifiers,
 		};
+		if (key === "") return this.compareModifiers(modifiers as ModifierKeys);
 
 		return !!this.keys[key] && this.compareModifiers(modifiers as ModifierKeys);
 	}
