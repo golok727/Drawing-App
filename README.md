@@ -10,9 +10,11 @@ npm run dev
 
 # Draw Stuff
 ![Preview Image](assets/preview_new.png)
+![Preview Image](assets/Preview3.png)
 ![Preview Image](assets/preview_2.png)
 
 # Edit Stuff (in progress)
 
 ![Preview Image](assets/BoundingBox.png)
 
+# Erase

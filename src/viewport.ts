@@ -62,10 +62,6 @@ class Viewport {
 			.subtract(this._offset);
 	}
 
-	private resetDrag() {
-		this.drag.reset();
-	}
-
 	private onPanStart(evt: AppKeyboardEvent) {
 		if (evt.isPressed("space") && !this.drag.active) {
 			this.canvas.style.cursor = "grab";
@@ -76,7 +72,7 @@ class Viewport {
 			this.ui.setCursor(this.canvas, this.app.currentTool);
 			this.drag.setActive(false);
 			this._offset = this._offset.add(this.drag.offset);
-			this.resetDrag();
+			this.drag.reset();
 		}
 	}
 
@@ -103,15 +99,15 @@ class Viewport {
 	private handlePointerMove(evt: PointerEvent) {
 		if (this.drag.active) {
 			this.drag.setEnd(this.getMouse(evt));
-			this.drag.offset = this.drag.end.subtract(this.drag.start);
 		}
 	}
 
 	private handlePointerUp(_: PointerEvent) {
 		if (this.drag.active) {
 			this.canvas.style.cursor = "grab";
+
 			this._offset = this._offset.add(this.drag.offset);
-			this.resetDrag();
+			this.drag.reset();
 		}
 	}
 

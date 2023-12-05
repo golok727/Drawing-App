@@ -7,9 +7,7 @@ class Drag {
 	public active = false;
 
 	constructor() {}
-	// get offset() {
-	// 	return this.end.subtract(this.start);
-	// }
+
 	public setStart(start: Vector) {
 		this.start = start;
 	}
@@ -20,6 +18,7 @@ class Drag {
 
 	public setEnd(end: Vector) {
 		this.end = end;
+		this.offset = this.end.subtract(this.start);
 	}
 
 	public reset() {
