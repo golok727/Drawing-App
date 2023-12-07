@@ -70,17 +70,37 @@
 						<button class="btn btn-circle" data-clear-all-btn>
 							<span class="material-symbols-outlined"> clear_all </span>
 						</button>
-						<div class="dropdown dropdown-bottom rounded-full">
+						<!-- Drop Down  -->
+						<div class="dropdown">
 							<div tabindex="0" role="button" class="btn m-1">
 								<span class="material-symbols-outlined"> instant_mix </span>
 							</div>
-							<ul
-								class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+							<div
+								tabindex="0"
+								class="dropdown-content z-[1] card card-compact w-64 p-2 mt-3 bg-slate-800 text-gray-300"
 							>
-								<li><a>Item 1</a></li>
-								<li><a>Item 2</a></li>
-							</ul>
+								<div class="card-body gap-3">
+									<h4 class="font-bold">Stroke</h4>
+
+									<div id="strokeColor" class="flex flex-wrap gap-2"></div>
+
+									<h4 class="font-bold">Fill</h4>
+
+									<div id="fillColor" class="flex flex-wrap gap-2"></div>
+
+									<h4 class="font-bold">Stroke Width</h4>
+									<input
+										id="pen-size"
+										type="range"
+										min="1"
+										max="20"
+										value="4"
+										class="range range-primary"
+									/>
+								</div>
+							</div>
 						</div>
+						<!-- Drop Down End -->
 					</div>
 				</div>
 			</div>

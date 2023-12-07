@@ -183,7 +183,7 @@ class Application {
 			// Brush Mode
 			if (this.isCurrentTool("brush")) {
 				this.renderer.onBeginStroke(this.mouse.clone(), {
-					strokeColor: COLORS.WHITE,
+					...this.ui.drawingState,
 				});
 				this.startDrawing();
 			}
@@ -198,9 +198,7 @@ class Application {
 				this.renderer.BeginRect(
 					this.getMouseLocation(),
 					{
-						fillColor: COLORS.NONE,
-						strokeColor: COLORS.RED,
-						strokeWidth: 7,
+						...this.ui.drawingState,
 					},
 					0.5
 				);
@@ -208,9 +206,7 @@ class Application {
 			// Circle
 			else if (this.isCurrentTool("circle")) {
 				this.renderer.BeginCircle(this.getMouseLocation(), {
-					fillColor: COLORS.NONE,
-					strokeColor: COLORS.RED,
-					strokeWidth: 7,
+					...this.ui.drawingState,
 				});
 			}
 		}

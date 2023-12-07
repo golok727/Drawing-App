@@ -1,4 +1,5 @@
 import Toolbar, { Tool } from "./toolbar";
+import { COLORS } from "./utils";
 
 export type EventHandlers = {
 	[K in keyof HTMLElementEventMap]?: (event: HTMLElementEventMap[K]) => void;
@@ -9,8 +10,17 @@ class UI {
 	private components: { element: Element; handlers: EventHandlers }[] = [];
 	private isRegistered = false;
 	private navBackground = document.getElementById("nav-bg");
+	public readonly drawingState = {
+		strokeColor: COLORS.WHITE as string,
+		fillColor: COLORS.NONE as string,
+		strokeWidth: 4,
+	};
 
-	constructor() {}
+	constructor() {
+		this.penSizeRangeSetup();
+		this.makeColorPicker("stroke");
+		this.makeColorPicker("fill");
+	}
 
 	enableNavEvents() {
 		this.navBackground?.classList.remove("pointer-events-none");
@@ -43,6 +53,54 @@ class UI {
 				canvas.style.cursor = "default";
 				break;
 		}
+	}
+
+	private penSizeRangeSetup() {
+		const range = document.getElementById("pen-size") as HTMLInputElement;
+		if (!range) return;
+		const strokeWidth = parseInt(range.value);
+		this.drawingState.strokeWidth = strokeWidth;
+
+		range.addEventListener("change", (evt) => {
+			const range = evt.currentTarget as HTMLInputElement;
+			this.drawingState.strokeWidth = parseInt(range.value) ?? 4;
+		});
+	}
+	private makeColorPicker(type: "stroke" | "fill") {
+		const containerId = type === "stroke" ? "strokeColor" : "fillColor";
+		const container = document.getElementById(containerId) as HTMLDivElement;
+
+		Object.entries(COLORS).forEach(([key, value]) => {
+			const span = document.createElement("span");
+			span.classList.add(
+				"w-5",
+				"h-5",
+				"rounded-full",
+				"cursor-pointer",
+				"hover:scale-105",
+				"transition-transform"
+			);
+			if (value === COLORS.NONE) {
+				span.classList.add("border-[2px]", "border-black");
+			}
+			span.style.backgroundColor = value;
+			span.setAttribute("color", key);
+			span.setAttribute("picker-for", type);
+
+			span.addEventListener("click", (evt) => {
+				const span = evt.currentTarget as HTMLSpanElement;
+				const pickerFor = span.getAttribute("picker-for");
+				const color = span.getAttribute("color") ?? COLORS.WHITE;
+
+				if (pickerFor === "stroke") {
+					this.drawingState.strokeColor = color;
+				} else {
+					this.drawingState.fillColor = color;
+				}
+			});
+
+			container.appendChild(span);
+		});
 	}
 
 	addComponent<T extends Element>(element: T, handlers: EventHandlers) {
