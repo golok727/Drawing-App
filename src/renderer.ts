@@ -210,8 +210,8 @@ class Renderer {
 	}
 
 	private getNearestBoundingElements(point: Vector) {
-		return this._elements.filter((elem) =>
-			elem.boundingBox.isIntersecting(point)
+		return this._elements.filter(
+			(elem) => elem.boundingBox.isIntersecting(point) && !elem._isDeleted
 		);
 	}
 	private getLastElement() {
