@@ -9,6 +9,9 @@ class Viewport {
 	private ui: UI;
 	private app: Application;
 	private keyboard: Keyboard;
+	private zoomDisplay = document.getElementById(
+		"zoom-display-value"
+	) as HTMLDivElement;
 
 	public center: Vector;
 	private _zoom = 1;
@@ -33,6 +36,9 @@ class Viewport {
 		this.keyboard.on("keyup", this.onPanEnd.bind(this));
 
 		this.addEventListeners();
+		if (!this.zoomDisplay) {
+			console.warn("Zoom value display container is empty");
+		}
 	}
 
 	public get zoom() {
@@ -44,6 +50,7 @@ class Viewport {
 
 	public resetZoom() {
 		this._zoom = 1;
+		this.updateZoomDisplay();
 	}
 
 	public reset() {
@@ -52,7 +59,13 @@ class Viewport {
 	}
 
 	public zoomCanvas(direction: number, step = 0.1) {
-		this._zoom = Math.max(0, Math.min(5, this._zoom + direction * step));
+		const maxZoomOut = 5;
+		const maxZoomIn = 0.1;
+		this._zoom = Math.max(
+			maxZoomIn,
+			Math.min(maxZoomOut, this._zoom + direction * step)
+		);
+		this.updateZoomDisplay();
 	}
 
 	public getMouse(evt: MouseEvent) {
@@ -60,6 +73,11 @@ class Viewport {
 			.subtract(this.center)
 			.scale(this._zoom)
 			.subtract(this._offset);
+	}
+
+	private updateZoomDisplay() {
+		const zoomPercent = (1 / this.zoom) * 100;
+		this.zoomDisplay.textContent = `${zoomPercent.toFixed(0)}%`;
 	}
 
 	private onPanStart(evt: AppKeyboardEvent) {

@@ -131,9 +131,21 @@ class Application {
 		});
 
 		// Clear All Button
-		ui.addComponent(document.querySelector("[data-clear-all-btn]"!)!, {
+		ui.addComponent(document.querySelector("[data-clear-all-btn]")!, {
 			click: () => {
 				this.renderer.clear();
+			},
+		});
+
+		ui.addComponent(document.getElementById("zoom-in-btn")!, {
+			click: () => {
+				this.viewport.zoomCanvas(-1);
+			},
+		});
+
+		ui.addComponent(document.getElementById("zoom-out-btn")!, {
+			click: () => {
+				this.viewport.zoomCanvas(1);
 			},
 		});
 
@@ -161,25 +173,24 @@ class Application {
 
 	/* Event Handlers  */
 	private handlePointerDown(evt: MouseEvent) {
-		// this.ui.disableNavigationBarPointerEvents();
 		this.ui.disableAppPointerEvents(this.canvas);
 		this.setMouse(this.viewport.getMouse(evt));
 
 		if (this.keyboard.isPressed("space")) return;
 
 		// For drag Ones
-		this.drag.dragStart(this.mouse.clone());
-
-		if (this.isCurrentTool("selector")) {
-			this.renderer.DeselectAll();
-			const element = this.renderer.getIntersectingElement(
-				this.getMouseLocation()
-			);
-			if (element) this.renderer.Select(element);
-
-			return;
-		}
 		if (evt.button === MOUSE_BUTTONS.LMB) {
+			this.drag.dragStart(this.mouse.clone());
+
+			if (this.isCurrentTool("selector")) {
+				this.renderer.DeselectAll();
+				const element = this.renderer.getIntersectingElement(
+					this.getMouseLocation()
+				);
+				if (element) this.renderer.Select(element);
+
+				return;
+			}
 			// Brush Mode
 			if (this.isCurrentTool("brush")) {
 				this.renderer.onBeginStroke(this.mouse.clone(), {
@@ -243,7 +254,6 @@ class Application {
 	}
 	// Mouse Up
 	private handlePointerUp(evt: MouseEvent) {
-		// this.ui.enableNavEvents();
 		this.ui.enableAppPointerEvents(this.canvas);
 		this.endDrawing();
 		this.endErasing();

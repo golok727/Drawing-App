@@ -326,11 +326,9 @@ class Renderer {
 	private __test_boundingBox(box: BoundingBox) {
 		const padding = 10;
 
-		this.ctx.strokeStyle = "hotpink";
+		this.ctx.strokeStyle = "blue";
 		this.ctx.lineWidth = 2;
 		this.ctx.beginPath();
-		this.ctx.setLineDash([4, 10]);
-		this.ctx.lineDashOffset = performance.now() / 100;
 		this.ctx.rect(
 			box.x - padding,
 			box.y - padding,

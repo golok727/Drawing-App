@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dim">
 	<head>
 		<meta charset="UTF-8" />
 		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -13,6 +13,7 @@
 	<body>
 		<div id="app-container" class="relative">
 			<!-- <h1>Radhey Shyam</h1> -->
+			<!-- Nav -->
 			<div
 				id="nav-bg"
 				class="absolute top-0 w-full grid place-content-center py-3 px-2 rounded"
@@ -25,6 +26,7 @@
 									arrow_selector_tool
 								</span></a
 							>
+
 							<a data-tool data-tool-name="brush" role="tab" class="tab"
 								><span class="material-symbols-outlined"> brush </span></a
 							>
@@ -60,13 +62,6 @@
 
 					<!-- Buttons -->
 					<div class="flex items-center gap-2">
-						<button class="btn btn-circle" data-undo-btn>
-							<span class="material-symbols-outlined"> undo </span>
-						</button>
-						<button class="btn btn-circle" data-redo-btn>
-							<span class="material-symbols-outlined"> redo </span>
-						</button>
-
 						<button class="btn btn-circle" data-clear-all-btn>
 							<span class="material-symbols-outlined"> clear_all </span>
 						</button>
@@ -102,6 +97,38 @@
 						</div>
 						<!-- Drop Down End -->
 					</div>
+				</div>
+			</div>
+
+			<!-- Zoom Level -->
+			<div class="absolute bottom-4 left-7 flex items-center gap-4">
+				<div class="shadow flex items-center">
+					<div class="lg:tooltip" data-tip="Zoom In">
+						<button id="zoom-in-btn" class="btn btn-ghost btn-xs">
+							<span class="material-symbols-outlined"> add </span>
+						</button>
+					</div>
+					<div class="min-w-[4rem] text-center">
+						<div id="zoom-display-value" class="stat-value text-base">100%</div>
+					</div>
+
+					<div class="lg:tooltip" data-tip="Zoom Out">
+						<button id="zoom-out-btn" class="btn btn-ghost btn-xs">
+							<span class="material-symbols-outlined"> remove </span>
+						</button>
+					</div>
+				</div>
+
+				<div class="lg:tooltip" data-tip="Undo">
+					<button class="btn btn-sm btn-circle" data-undo-btn>
+						<span class="material-symbols-outlined"> undo </span>
+					</button>
+				</div>
+
+				<div class="lg:tooltip" data-tip="Redo">
+					<button class="btn btn-sm btn-circle" data-redo-btn>
+						<span class="material-symbols-outlined"> redo </span>
+					</button>
 				</div>
 			</div>
 
