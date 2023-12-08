@@ -1,6 +1,6 @@
 import UI from "./ui";
 import AppHistory, { HistoryAction, UndoOrRedo } from "./history";
-import { Tool } from "./toolbar";
+import Toolbar, { Tool } from "./toolbar";
 import Vector from "./vector";
 import Renderer from "./renderer";
 import Viewport from "./viewport";
@@ -18,8 +18,6 @@ export type Vec2 = [number, number];
 class Application {
 	private canvas: HTMLCanvasElement = document.createElement("canvas");
 	private ctx!: CanvasRenderingContext2D;
-	private cWidth!: number;
-	private cHeight!: number;
 
 	private renderer: Renderer;
 	private ui = new UI();
@@ -40,6 +38,8 @@ class Application {
 		pointerDownHandler: (evt: PointerEvent) => void;
 		pointerUpHandler: (evt: PointerEvent) => void;
 		pointerMoveHandler: (evt: PointerEvent) => void;
+		pointerLeaveHandler: (evt: PointerEvent) => void;
+		resizeHandler: (evt: UIEvent) => void;
 	};
 
 	constructor(container: HTMLElement) {
@@ -54,19 +54,30 @@ class Application {
 
 		this.addEventListeners();
 		this.setupUI();
+		this.ui.makeToolBar(this.setTool.bind(this));
 	}
-
-	destroy() {
-		const { pointerDownHandler, pointerMoveHandler, pointerUpHandler } =
-			this.refHandlers;
+	get cWidth() {
+		return this.canvas.offsetWidth;
+	}
+	get cHeight() {
+		return this.canvas.offsetHeight;
+	}
+	public destroy() {
+		const {
+			pointerDownHandler,
+			pointerMoveHandler,
+			pointerUpHandler,
+			resizeHandler,
+		} = this.refHandlers;
 
 		this.canvas.removeEventListener("pointerdown", pointerDownHandler);
 		this.canvas.removeEventListener("pointerup", pointerUpHandler);
 		this.canvas.removeEventListener("pointermove", pointerMoveHandler);
+		window.removeEventListener("resize", resizeHandler);
 		this.keyboard.destroy();
 	}
 
-	render() {
+	public render() {
 		const { ctx } = this;
 
 		ctx.fillStyle = "black";
@@ -96,17 +107,14 @@ class Application {
 	private setupCanvas(container: HTMLElement) {
 		this.ui.setCursor(this.canvas, this.currentTool);
 		this.canvas.classList.add("min-h-screen");
-
+		this.canvas.classList.add("h-screen");
 		container.appendChild(this.canvas);
 		this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
 		if (!this.ctx)
 			throw new Error("Canvas API is not supported in your browser");
 
-		this.cWidth = this.canvas.offsetWidth;
-		this.cHeight = this.canvas.offsetHeight;
-
-		this.canvas.width = this.cWidth;
-		this.canvas.height = this.cHeight;
+		this.canvas.width = this.canvas.offsetWidth;
+		this.canvas.height = this.canvas.offsetHeight;
 	}
 
 	private isCurrentTool(tool: Tool) {
@@ -150,14 +158,19 @@ class Application {
 		});
 
 		// Initialize the toolbar
-		ui.toolbarInit((tool: Tool) => {
-			this.currentTool = tool;
-			this.ui.setCursor(this.canvas, this.currentTool);
-			if (tool !== "selector") this.renderer.DeselectAll();
-		});
 	}
 
-	private cancel() {
+	private setTool(tool: Tool) {
+		this.currentTool = tool;
+		this.ui.setCursor(this.canvas, this.currentTool);
+		if (tool !== "selector") this.renderer.DeselectAll();
+	}
+	private changeTool(tool: Tool) {
+		this.setTool(tool);
+		this.ui.toolbar?.setTool(this.currentTool);
+	}
+
+	private cancelAction() {
 		if (this.isErasing) this.renderer.cancelEraser();
 
 		this.endDrawing();
@@ -279,6 +292,10 @@ class Application {
 		if (this.drag.isDragging()) this.drag.stop();
 	}
 
+	private handlePointerLeave(evt: PointerEvent) {
+		this.cancelAction();
+	}
+
 	// History handle
 	private historyHandler(type: UndoOrRedo, action: HistoryAction) {
 		let rendererUndoRedoHandler =
@@ -327,7 +344,7 @@ class Application {
 		}
 
 		if (isPressed("escape")) {
-			this.cancel();
+			this.cancelAction();
 		}
 
 		if (isPressed("=")) {
@@ -337,26 +354,70 @@ class Application {
 		if (isPressed("-")) {
 			this.viewport.zoomCanvas(1);
 		}
+
+		if (isPressed("a")) {
+			this.changeTool("selector");
+		}
+
+		if (isPressed("b")) {
+			this.changeTool("brush");
+		}
+
+		if (isPressed("e")) {
+			this.changeTool("eraser");
+		}
+
+		if (isPressed("r")) {
+			this.changeTool("rect");
+		}
+
+		if (isPressed("c")) {
+			this.changeTool("circle");
+		}
+
+		if (isPressed("l")) {
+			this.changeTool("line");
+		}
+
+		if (isPressed("h")) {
+			this.changeTool("highlighter");
+		}
+
+		if (isPressed("i")) {
+			this.changeTool("texture");
+		}
 	}
+
 	// Keyboard class Handlers
 	private handleKeyUp(_evt: AppKeyboardEvent) {}
+
+	private handleResize(_evt: UIEvent) {
+		console.log("resize");
+		this.canvas.width = this.canvas.offsetWidth;
+		this.canvas.height = this.canvas.offsetHeight;
+	}
 
 	// Register Events
 	private addEventListeners() {
 		const pointerDownHandler = this.handlePointerDown.bind(this);
 		const pointerUpHandler = this.handlePointerUp.bind(this);
 		const pointerMoveHandler = this.handlePointerMove.bind(this);
-
+		const pointerLeaveHandler = this.handlePointerLeave.bind(this);
+		const resizeHandler = this.handleResize.bind(this);
 		this.refHandlers = {
 			...this.refHandlers,
 			pointerDownHandler,
 			pointerMoveHandler,
 			pointerUpHandler,
+			pointerLeaveHandler,
+			resizeHandler,
 		};
 
 		this.canvas.addEventListener("pointerdown", pointerDownHandler);
 		this.canvas.addEventListener("pointerup", pointerUpHandler);
-		this.canvas.addEventListener("mousemove", pointerMoveHandler);
+		this.canvas.addEventListener("pointermove", pointerMoveHandler);
+		document.addEventListener("pointerleave", pointerLeaveHandler);
+		window.addEventListener("resize", resizeHandler);
 	}
 }
 

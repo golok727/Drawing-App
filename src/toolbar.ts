@@ -21,7 +21,7 @@ class Toolbar {
 		this.setTool(this.currentTool);
 		this.addEventListeners();
 	}
-	private setTool(tool: Tool) {
+	public setTool(tool: Tool) {
 		const currentActiveTab = document.querySelector(
 			"[data-tool].tab.tab-active"
 		);

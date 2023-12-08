@@ -9,13 +9,15 @@ type Component = { element: Element; handlers: EventHandlers };
 class UI {
 	private components: { element: Element; handlers: EventHandlers }[] = [];
 	private isRegistered = false;
+	public toolbar: Toolbar | null = null;
+
 	private appContainer = document.getElementById(
 		"app-container"
 	) as HTMLDivElement;
 	public readonly drawingState = {
 		strokeColor: COLORS.WHITE as string,
 		fillColor: COLORS.NONE as string,
-		strokeWidth: 4,
+		strokeWidth: 8,
 	};
 
 	constructor() {
@@ -23,6 +25,10 @@ class UI {
 		this.makeColorPicker("stroke");
 		this.makeColorPicker("fill");
 		if (!this.appContainer) console.warn("App Container is null");
+	}
+
+	public makeToolBar(onToolChange?: (tool: Tool) => void) {
+		this.toolbar = new Toolbar(onToolChange);
 	}
 
 	setCursor(canvas: HTMLCanvasElement, tool: Tool) {
@@ -138,10 +144,6 @@ class UI {
 			component.element.addEventListener(type, eventHandler as EventListener);
 		}
 		return component;
-	}
-
-	toolbarInit(onToolChange?: (tool: Tool) => void) {
-		new Toolbar(onToolChange);
 	}
 }
 

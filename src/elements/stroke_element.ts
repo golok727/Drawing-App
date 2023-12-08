@@ -56,10 +56,10 @@ export class StrokeElement extends CanvasElement {
 
 	private generatePath() {
 		const outlinePoints = getStroke(this._points, {
-			simulatePressure: false,
+			simulatePressure: true,
 			size: this.styles.strokeWidth,
 			thinning: 0.6,
-			smoothing: 0.5,
+			smoothing: 0.7,
 			streamline: 0.5,
 			easing: (t) => Math.sin((t * Math.PI) / 2), // https://easings.net/#easeOutSine
 		});
