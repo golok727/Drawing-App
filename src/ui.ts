@@ -9,25 +9,24 @@ type Component = { element: Element; handlers: EventHandlers };
 class UI {
 	private components: { element: Element; handlers: EventHandlers }[] = [];
 	private isRegistered = false;
-	private navBackground = document.getElementById("nav-bg");
+	private canvas: HTMLCanvasElement;
+	private appContainer = document.getElementById(
+		"app-container"
+	) as HTMLDivElement;
 	public readonly drawingState = {
 		strokeColor: COLORS.WHITE as string,
 		fillColor: COLORS.NONE as string,
 		strokeWidth: 4,
 	};
 
-	constructor() {
+	constructor(canvas: HTMLCanvasElement) {
+		this.canvas = canvas;
 		this.penSizeRangeSetup();
 		this.makeColorPicker("stroke");
 		this.makeColorPicker("fill");
+		if (!this.appContainer) console.warn("App Container is null");
 	}
 
-	enableNavEvents() {
-		this.navBackground?.classList.remove("pointer-events-none");
-	}
-	disableNavigationBarPointerEvents() {
-		this.navBackground?.classList.add("pointer-events-none");
-	}
 	setCursor(canvas: HTMLCanvasElement, tool: Tool) {
 		switch (tool) {
 			case "brush":
@@ -53,6 +52,16 @@ class UI {
 				canvas.style.cursor = "default";
 				break;
 		}
+	}
+
+	public enableAppPointerEvents() {
+		this.appContainer.style.pointerEvents = "all";
+		this.canvas.style.pointerEvents = "all";
+	}
+
+	public disableAppPointerEvents() {
+		this.appContainer.style.pointerEvents = "none";
+		this.canvas.style.pointerEvents = "all";
 	}
 
 	private penSizeRangeSetup() {
