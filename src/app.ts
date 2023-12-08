@@ -7,7 +7,7 @@ import Viewport from "./viewport";
 import Keyboard, { AppKeyboardEvent } from "./keyboard";
 import Drag from "./drag";
 
-const MOUSE_BUTTONS = {
+export const MOUSE_BUTTONS = {
 	LMB: 0,
 	MMB: 1,
 	RMB: 2,

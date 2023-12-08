@@ -1,4 +1,4 @@
-import Application from "./app";
+import Application, { MOUSE_BUTTONS } from "./app";
 import Drag from "./drag";
 import Keyboard, { AppKeyboardEvent } from "./keyboard";
 import UI from "./ui";
@@ -107,7 +107,10 @@ class Viewport {
 	}
 
 	private handlePointerDown(evt: PointerEvent) {
-		if (this.keyboard.isPressed("space") && evt.button == 0) {
+		if (
+			(this.keyboard.isPressed("space") && evt.button == MOUSE_BUTTONS.LMB) ||
+			evt.button === MOUSE_BUTTONS.MMB
+		) {
 			this.canvas.style.cursor = "grabbing";
 			this.dragState.dragStart(this.getMouse(evt));
 		}
@@ -116,11 +119,16 @@ class Viewport {
 		this.dragState.dragTo(this.getMouse(evt));
 	}
 
-	private handlePointerUp(_: PointerEvent) {
+	private handlePointerUp(evt: PointerEvent) {
 		if (this.dragState.isDragging()) {
 			this.canvas.style.cursor = "grab";
 			this._offset = this._offset.add(this.dragState.offset);
 			this.dragState.stop();
+		}
+
+		if (evt.button === MOUSE_BUTTONS.MMB) {
+			console.log("Set");
+			this.ui.setCursor(this.canvas, this.app.currentTool);
 		}
 	}
 
