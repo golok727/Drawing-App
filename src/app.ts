@@ -22,7 +22,7 @@ class Application {
 	private cHeight!: number;
 
 	private renderer: Renderer;
-	private ui: UI;
+	private ui = new UI();
 	private _history = new AppHistory();
 	private keyboard;
 	private viewport: Viewport;
@@ -43,7 +43,6 @@ class Application {
 	};
 
 	constructor(container: HTMLElement) {
-		this.ui = new UI(this.canvas);
 		this.setupCanvas(container);
 
 		this.renderer = new Renderer(this.ctx, this._history);
@@ -163,7 +162,7 @@ class Application {
 	/* Event Handlers  */
 	private handlePointerDown(evt: MouseEvent) {
 		// this.ui.disableNavigationBarPointerEvents();
-		this.ui.disableAppPointerEvents();
+		this.ui.disableAppPointerEvents(this.canvas);
 		this.setMouse(this.viewport.getMouse(evt));
 
 		if (this.keyboard.isPressed("space")) return;
@@ -245,7 +244,7 @@ class Application {
 	// Mouse Up
 	private handlePointerUp(evt: MouseEvent) {
 		// this.ui.enableNavEvents();
-		this.ui.enableAppPointerEvents();
+		this.ui.enableAppPointerEvents(this.canvas);
 		this.endDrawing();
 		this.endErasing();
 

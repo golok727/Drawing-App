@@ -9,7 +9,6 @@ type Component = { element: Element; handlers: EventHandlers };
 class UI {
 	private components: { element: Element; handlers: EventHandlers }[] = [];
 	private isRegistered = false;
-	private canvas: HTMLCanvasElement;
 	private appContainer = document.getElementById(
 		"app-container"
 	) as HTMLDivElement;
@@ -19,8 +18,7 @@ class UI {
 		strokeWidth: 4,
 	};
 
-	constructor(canvas: HTMLCanvasElement) {
-		this.canvas = canvas;
+	constructor() {
 		this.penSizeRangeSetup();
 		this.makeColorPicker("stroke");
 		this.makeColorPicker("fill");
@@ -54,14 +52,14 @@ class UI {
 		}
 	}
 
-	public enableAppPointerEvents() {
+	public enableAppPointerEvents(canvas: HTMLCanvasElement) {
 		this.appContainer.style.pointerEvents = "all";
-		this.canvas.style.pointerEvents = "all";
+		canvas.style.pointerEvents = "all";
 	}
 
-	public disableAppPointerEvents() {
+	public disableAppPointerEvents(canvas: HTMLCanvasElement) {
 		this.appContainer.style.pointerEvents = "none";
-		this.canvas.style.pointerEvents = "all";
+		canvas.style.pointerEvents = "all";
 	}
 
 	private penSizeRangeSetup() {
