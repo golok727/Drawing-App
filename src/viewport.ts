@@ -5,7 +5,7 @@ import UI from "./ui";
 import Vector from "./vector";
 
 class Viewport {
-	private canvas: HTMLCanvasElement;
+	private drawingCanvas: HTMLCanvasElement;
 	private ui: UI;
 	private app: Application;
 	private keyboard: Keyboard;
@@ -25,8 +25,11 @@ class Viewport {
 		app: Application,
 		ui: UI
 	) {
-		this.canvas = ctx.canvas;
-		this.center = new Vector(this.canvas.width / 2, this.canvas.height / 2);
+		this.drawingCanvas = ctx.canvas;
+		this.center = new Vector(
+			this.drawingCanvas.width / 2,
+			this.drawingCanvas.height / 2
+		);
 		this._offset = this.center.scale(-1);
 
 		this.ui = ui;
@@ -82,28 +85,32 @@ class Viewport {
 
 	private onPanStart(evt: AppKeyboardEvent) {
 		if (evt.isPressed("space") && !this.dragState.isDragging()) {
-			this.canvas.style.cursor = "grab";
+			this.drawingCanvas.style.cursor = "grab";
 		}
 	}
 	private onPanEnd(evt: AppKeyboardEvent) {
 		if (evt.key === "space") {
-			this.ui.setCursor(this.canvas, this.app.currentTool);
+			this.ui.setCursor(this.drawingCanvas, this.app.currentTool);
 			this._offset = this._offset.add(this.dragState.offset);
 			this.dragState.stop();
 		}
 	}
 
 	private addEventListeners() {
-		this.canvas.addEventListener("wheel", this.handleWheel.bind(this));
-		this.canvas.addEventListener(
+		const { drawingCanvas: interactiveCanvas } = this;
+		interactiveCanvas.addEventListener("wheel", this.handleWheel.bind(this));
+		interactiveCanvas.addEventListener(
 			"pointerdown",
 			this.handlePointerDown.bind(this)
 		);
-		this.canvas.addEventListener(
+		interactiveCanvas.addEventListener(
 			"pointermove",
 			this.handlePointerMove.bind(this)
 		);
-		this.canvas.addEventListener("pointerup", this.handlePointerUp.bind(this));
+		interactiveCanvas.addEventListener(
+			"pointerup",
+			this.handlePointerUp.bind(this)
+		);
 	}
 
 	private handlePointerDown(evt: PointerEvent) {
@@ -111,7 +118,7 @@ class Viewport {
 			(this.keyboard.isPressed("space") && evt.button == MOUSE_BUTTONS.LMB) ||
 			evt.button === MOUSE_BUTTONS.MMB
 		) {
-			this.canvas.style.cursor = "grabbing";
+			this.drawingCanvas.style.cursor = "grabbing";
 			this.dragState.dragStart(this.getMouse(evt));
 		}
 	}
@@ -121,14 +128,14 @@ class Viewport {
 
 	private handlePointerUp(evt: PointerEvent) {
 		if (this.dragState.isDragging()) {
-			this.canvas.style.cursor = "grab";
+			this.drawingCanvas.style.cursor = "grab";
 			this._offset = this._offset.add(this.dragState.offset);
 			this.dragState.stop();
 		}
 
 		if (evt.button === MOUSE_BUTTONS.MMB) {
 			console.log("Set");
-			this.ui.setCursor(this.canvas, this.app.currentTool);
+			this.ui.setCursor(this.drawingCanvas, this.app.currentTool);
 		}
 	}
 

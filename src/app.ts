@@ -16,8 +16,12 @@ export const MOUSE_BUTTONS = {
 export type Vec2 = [number, number];
 
 class Application {
-	private canvas: HTMLCanvasElement = document.createElement("canvas");
-	private ctx!: CanvasRenderingContext2D;
+	private staticCanvas: HTMLCanvasElement = document.createElement("canvas");
+	private interactiveCanvas: HTMLCanvasElement =
+		document.createElement("canvas");
+
+	private drawingCtx!: CanvasRenderingContext2D;
+	private interactiveCtx!: CanvasRenderingContext2D;
 
 	private renderer: Renderer;
 	private ui = new UI();
@@ -45,22 +49,31 @@ class Application {
 	constructor(container: HTMLElement) {
 		this.setupCanvas(container);
 
-		this.renderer = new Renderer(this.ctx, this._history);
+		this.renderer = new Renderer(
+			this.drawingCtx,
+			this.interactiveCtx,
+			this._history
+		);
 		this.keyboard = new Keyboard(
 			this.handleKeyDown.bind(this),
 			this.handleKeyUp.bind(this)
 		);
-		this.viewport = new Viewport(this.ctx, this.keyboard, this, this.ui);
+		this.viewport = new Viewport(
+			this.interactiveCtx,
+			this.keyboard,
+			this,
+			this.ui
+		);
 
 		this.addEventListeners();
 		this.setupUI();
 		this.ui.makeToolBar(this.setTool.bind(this));
 	}
 	get cWidth() {
-		return this.canvas.offsetWidth;
+		return this.staticCanvas.offsetWidth;
 	}
 	get cHeight() {
-		return this.canvas.offsetHeight;
+		return this.staticCanvas.offsetHeight;
 	}
 	public destroy() {
 		const {
@@ -70,25 +83,42 @@ class Application {
 			resizeHandler,
 		} = this.refHandlers;
 
-		this.canvas.removeEventListener("pointerdown", pointerDownHandler);
-		this.canvas.removeEventListener("pointerup", pointerUpHandler);
-		this.canvas.removeEventListener("pointermove", pointerMoveHandler);
+		this.interactiveCanvas.removeEventListener(
+			"pointerdown",
+			pointerDownHandler
+		);
+		this.interactiveCanvas.removeEventListener("pointerup", pointerUpHandler);
+		this.interactiveCanvas.removeEventListener(
+			"pointermove",
+			pointerMoveHandler
+		);
 		window.removeEventListener("resize", resizeHandler);
 		this.keyboard.destroy();
 	}
 
 	public render() {
-		const { ctx } = this;
+		const { drawingCtx, interactiveCtx } = this;
 
-		ctx.fillStyle = "black";
-		ctx.clearRect(0, 0, this.cWidth, this.cHeight);
-		ctx.fillRect(0, 0, this.cWidth, this.cHeight);
-		ctx.save();
-		ctx.translate(this.viewport.center.x, this.viewport.center.y);
-		ctx.scale(1 / this.viewport.zoom, 1 / this.viewport.zoom);
-		ctx.translate(this.viewport.offset.x, this.viewport.offset.y);
+		drawingCtx.fillStyle = "black";
+		const contexts = [interactiveCtx, drawingCtx];
+
+		for (const ctx of contexts) {
+			ctx.clearRect(0, 0, this.cWidth, this.cHeight);
+		}
+
+		drawingCtx.fillRect(0, 0, this.cWidth, this.cHeight);
+
+		for (const ctx of contexts) {
+			ctx.save();
+			ctx.translate(this.viewport.center.x, this.viewport.center.y);
+			ctx.scale(1 / this.viewport.zoom, 1 / this.viewport.zoom);
+			ctx.translate(this.viewport.offset.x, this.viewport.offset.y);
+		}
+
 		this.renderer.Render();
-		ctx.restore();
+
+		drawingCtx.restore();
+		interactiveCtx.restore();
 	}
 
 	private startDrawing() {
@@ -105,16 +135,41 @@ class Application {
 	}
 
 	private setupCanvas(container: HTMLElement) {
-		this.ui.setCursor(this.canvas, this.currentTool);
-		this.canvas.classList.add("min-h-screen");
-		this.canvas.classList.add("h-screen");
-		container.appendChild(this.canvas);
-		this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-		if (!this.ctx)
+		const { staticCanvas, interactiveCanvas } = this;
+		this.ui.setCursor(interactiveCanvas, this.currentTool);
+
+		container.style.position = "relative";
+
+		interactiveCanvas.id = "canvas-interactive";
+		interactiveCanvas.id = "canvas-static";
+
+		interactiveCanvas.style.position = "absolute";
+		interactiveCanvas.style.inset = "0";
+		interactiveCanvas.style.zIndex = "10";
+		interactiveCanvas.style.pointerEvents = "all";
+
+		container.appendChild(this.interactiveCanvas);
+		container.appendChild(this.staticCanvas);
+
+		for (const canvas of [staticCanvas, interactiveCanvas]) {
+			canvas.classList.add("min-h-screen");
+			canvas.classList.add("h-screen");
+
+			canvas.width = canvas.offsetWidth;
+			canvas.height = canvas.offsetHeight;
+		}
+
+		this.drawingCtx = staticCanvas.getContext("2d") as CanvasRenderingContext2D;
+
+		this.interactiveCtx = interactiveCanvas.getContext(
+			"2d"
+		) as CanvasRenderingContext2D;
+
+		if (!this.drawingCtx)
 			throw new Error("Canvas API is not supported in your browser");
 
-		this.canvas.width = this.canvas.offsetWidth;
-		this.canvas.height = this.canvas.offsetHeight;
+		if (!this.interactiveCtx)
+			throw new Error("Canvas API is not supported in your browser");
 	}
 
 	private isCurrentTool(tool: Tool) {
@@ -162,7 +217,7 @@ class Application {
 
 	private setTool(tool: Tool) {
 		this.currentTool = tool;
-		this.ui.setCursor(this.canvas, this.currentTool);
+		this.ui.setCursor(this.interactiveCanvas, this.currentTool);
 		if (tool !== "selector") this.renderer.DeselectAll();
 	}
 	private changeTool(tool: Tool) {
@@ -186,7 +241,7 @@ class Application {
 
 	/* Event Handlers  */
 	private handlePointerDown(evt: MouseEvent) {
-		this.ui.disableAppPointerEvents(this.canvas);
+		this.ui.disableAppPointerEvents();
 		this.setMouse(this.viewport.getMouse(evt));
 
 		if (this.keyboard.isPressed("space")) return;
@@ -267,7 +322,7 @@ class Application {
 	}
 	// Mouse Up
 	private handlePointerUp(evt: MouseEvent) {
-		this.ui.enableAppPointerEvents(this.canvas);
+		this.ui.enableAppPointerEvents();
 		this.endDrawing();
 		this.endErasing();
 
@@ -392,8 +447,12 @@ class Application {
 	private handleKeyUp(_evt: AppKeyboardEvent) {}
 
 	private handleResize(_evt: UIEvent) {
-		this.canvas.width = this.canvas.offsetWidth;
-		this.canvas.height = this.canvas.offsetHeight;
+		const { staticCanvas, interactiveCanvas } = this;
+
+		staticCanvas.width = this.staticCanvas.offsetWidth;
+		staticCanvas.height = this.staticCanvas.offsetHeight;
+		interactiveCanvas.width = this.staticCanvas.offsetWidth;
+		interactiveCanvas.height = this.staticCanvas.offsetHeight;
 	}
 
 	// Register Events
@@ -412,9 +471,9 @@ class Application {
 			resizeHandler,
 		};
 
-		this.canvas.addEventListener("pointerdown", pointerDownHandler);
-		this.canvas.addEventListener("pointerup", pointerUpHandler);
-		this.canvas.addEventListener("pointermove", pointerMoveHandler);
+		this.interactiveCanvas.addEventListener("pointerdown", pointerDownHandler);
+		this.interactiveCanvas.addEventListener("pointerup", pointerUpHandler);
+		this.interactiveCanvas.addEventListener("pointermove", pointerMoveHandler);
 		document.addEventListener("pointerleave", pointerLeaveHandler);
 		window.addEventListener("resize", resizeHandler);
 	}

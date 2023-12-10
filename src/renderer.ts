@@ -13,15 +13,21 @@ import RectangleElement from "./elements/rect_element";
 import CircleElement from "./elements/circle_element";
 
 class Renderer {
-	private ctx: CanvasRenderingContext2D;
+	private drawingCtx: CanvasRenderingContext2D;
+	private interactiveCtx: CanvasRenderingContext2D;
 	private _elements: CanvasElement[] = [];
 	private _history: AppHistory;
 	private _toDelete = new Set<CanvasElement>();
 	private _Selected = new Set<CanvasElement>();
 
-	constructor(ctx: CanvasRenderingContext2D, history: AppHistory) {
-		this.ctx = ctx;
+	constructor(
+		drawingCtx: CanvasRenderingContext2D,
+		interactiveCtx: CanvasRenderingContext2D,
+		history: AppHistory
+	) {
+		this.drawingCtx = drawingCtx;
 		this._history = history;
+		this.interactiveCtx = interactiveCtx;
 
 		this._history.onOldestRemove = this.historyOnRemoveOldestChange.bind(this);
 		this._history.onRedoClear = this.historyOnRedoClear.bind(this);
@@ -166,7 +172,7 @@ class Renderer {
 		for (const element of elementsNearCurrentPoint) {
 			if (this._toDelete.has(element)) continue;
 
-			if (element.checkIntersection(point, this.ctx)) {
+			if (element.checkIntersection(point, this.drawingCtx)) {
 				element.setStyles({
 					strokeColor: "rgba(86, 86, 86, 0.40)",
 					fillColor: "rgba(86, 86, 86, 0.40)",
@@ -190,7 +196,7 @@ class Renderer {
 	// Select
 	public getIntersectingElement(point: Vector) {
 		for (const element of this._elements) {
-			if (element.checkIntersection(point, this.ctx)) {
+			if (element.checkIntersection(point, this.drawingCtx)) {
 				return element;
 			}
 		}
@@ -311,7 +317,7 @@ class Renderer {
 	private drawElements() {
 		for (const element of this.elements) {
 			if (element.isDeleted) continue;
-			element.draw(this.ctx);
+			element.draw(this.drawingCtx);
 			const box = element.boundingBox;
 			if (this._Selected.has(element)) this.__test_boundingBox(box);
 		}
@@ -320,17 +326,17 @@ class Renderer {
 	private __test_boundingBox(box: BoundingBox) {
 		const padding = 10;
 
-		this.ctx.strokeStyle = "blue";
-		this.ctx.lineWidth = 2;
-		this.ctx.beginPath();
-		this.ctx.rect(
+		this.interactiveCtx.strokeStyle = "blue";
+		this.interactiveCtx.lineWidth = 2;
+		this.interactiveCtx.beginPath();
+		this.interactiveCtx.rect(
 			box.x - padding,
 			box.y - padding,
 			box.w + 2 * padding,
 			box.h + 2 * padding
 		);
-		this.ctx.stroke();
-		this.ctx.setLineDash([]);
+		this.interactiveCtx.stroke();
+		this.interactiveCtx.setLineDash([]);
 	}
 }
 

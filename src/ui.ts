@@ -60,14 +60,12 @@ class UI {
 		}
 	}
 
-	public enableAppPointerEvents(canvas: HTMLCanvasElement) {
+	public enableAppPointerEvents() {
 		this.appContainer.style.pointerEvents = "all";
-		canvas.style.pointerEvents = "all";
 	}
 
-	public disableAppPointerEvents(canvas: HTMLCanvasElement) {
+	public disableAppPointerEvents() {
 		this.appContainer.style.pointerEvents = "none";
-		canvas.style.pointerEvents = "all";
 	}
 
 	private penSizeRangeSetup() {
