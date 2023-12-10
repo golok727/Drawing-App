@@ -106,7 +106,6 @@ class UI {
 				const span = evt.currentTarget as HTMLSpanElement;
 				const pickerFor = span.getAttribute("picker-for");
 				let color = span.getAttribute("color") ?? COLORS.WHITE;
-				console.log(color);
 
 				if (pickerFor === "stroke") {
 					this.drawingState.strokeColor = color;
