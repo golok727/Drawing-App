@@ -5,7 +5,7 @@ import UI from "./ui";
 import Vector from "./vector";
 
 class Viewport {
-	private drawingCanvas: HTMLCanvasElement;
+	private interactiveCanvas: HTMLCanvasElement;
 	private ui: UI;
 	private app: Application;
 	private keyboard: Keyboard;
@@ -20,15 +20,16 @@ class Viewport {
 	private dragState = new Drag();
 
 	constructor(
-		ctx: CanvasRenderingContext2D,
+		interactiveCtx: CanvasRenderingContext2D,
+
 		keyboard: Keyboard,
 		app: Application,
 		ui: UI
 	) {
-		this.drawingCanvas = ctx.canvas;
+		this.interactiveCanvas = interactiveCtx.canvas;
 		this.center = new Vector(
-			this.drawingCanvas.width / 2,
-			this.drawingCanvas.height / 2
+			this.interactiveCanvas.width / 2,
+			this.interactiveCanvas.height / 2
 		);
 		this._offset = this.center.scale(-1);
 
@@ -85,19 +86,19 @@ class Viewport {
 
 	private onPanStart(evt: AppKeyboardEvent) {
 		if (evt.isPressed("space") && !this.dragState.isDragging()) {
-			this.drawingCanvas.style.cursor = "grab";
+			this.interactiveCanvas.style.cursor = "grab";
 		}
 	}
 	private onPanEnd(evt: AppKeyboardEvent) {
 		if (evt.key === "space") {
-			this.ui.setCursor(this.drawingCanvas, this.app.currentTool);
+			this.ui.setCursor(this.interactiveCanvas, this.app.currentTool);
 			this._offset = this._offset.add(this.dragState.offset);
 			this.dragState.stop();
 		}
 	}
 
 	private addEventListeners() {
-		const { drawingCanvas: interactiveCanvas } = this;
+		const { interactiveCanvas } = this;
 		interactiveCanvas.addEventListener("wheel", this.handleWheel.bind(this));
 		interactiveCanvas.addEventListener(
 			"pointerdown",
@@ -118,7 +119,7 @@ class Viewport {
 			(this.keyboard.isPressed("space") && evt.button == MOUSE_BUTTONS.LMB) ||
 			evt.button === MOUSE_BUTTONS.MMB
 		) {
-			this.drawingCanvas.style.cursor = "grabbing";
+			this.interactiveCanvas.style.cursor = "grabbing";
 			this.dragState.dragStart(this.getMouse(evt));
 		}
 	}
@@ -128,14 +129,13 @@ class Viewport {
 
 	private handlePointerUp(evt: PointerEvent) {
 		if (this.dragState.isDragging()) {
-			this.drawingCanvas.style.cursor = "grab";
+			this.interactiveCanvas.style.cursor = "grab";
 			this._offset = this._offset.add(this.dragState.offset);
 			this.dragState.stop();
 		}
 
 		if (evt.button === MOUSE_BUTTONS.MMB) {
-			console.log("Set");
-			this.ui.setCursor(this.drawingCanvas, this.app.currentTool);
+			this.ui.setCursor(this.interactiveCanvas, this.app.currentTool);
 		}
 	}
 
