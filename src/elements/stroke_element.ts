@@ -5,10 +5,8 @@ import Vector from "../vector";
 import { CanvasStyles } from "../styles";
 import BoundingBox from "../bounding-box";
 
-type BrushTypes = "normal" | "tapered";
 // Strokes
 export class StrokeElement extends CanvasElement {
-	private brushType: BrushTypes = "normal";
 	private _points: Vector[] = [];
 	private _done = false;
 	private computedPath!: Path2D;
@@ -54,6 +52,19 @@ export class StrokeElement extends CanvasElement {
 		return ctx.isPointInPath(this.computedPath, point.x, point.y, "nonzero");
 	}
 
+	public smooth() {
+		const { _points: points } = this;
+
+		const len = points.length;
+		if (len <= 2) return;
+
+		// Averaging algorithm
+		for (let i = 1; i < len - 1; i++) {
+			points[i].x = (points[i - 1].x + points[i].x + points[i + 1].x) / 3;
+			points[i].y = (points[i - 1].y + points[i].y + points[i + 1].y) / 3;
+		}
+	}
+
 	private generatePath() {
 		const outlinePoints = getStroke(this._points, {
 			simulatePressure: true,
@@ -74,13 +85,7 @@ export class StrokeElement extends CanvasElement {
 	}
 
 	private drawStroke(ctx: CanvasRenderingContext2D) {
-		switch (this.brushType) {
-			case "normal":
-				this.freeDraw(ctx);
-				break;
-			case "tapered":
-				break;
-		}
+		this.freeDraw(ctx);
 	}
 
 	override draw(ctx: CanvasRenderingContext2D): void {

@@ -45,6 +45,33 @@ class AppHistory {
 		this.maxHistory = max;
 	}
 
+	public add(action: HistoryAction) {
+		this._add(action);
+		this.onRedoClear(this.redoStack);
+		this.redoStack = [];
+	}
+	public addCanvasElement(element: CanvasElement) {
+		this.add({ type: "add_element", element });
+	}
+
+	public undo() {
+		const lastAction = this.history.pop();
+		if (lastAction) this.redoStack.push(lastAction);
+
+		return lastAction;
+	}
+
+	public redo() {
+		const lastAction = this.redoStack.pop();
+		if (lastAction) this.history.push(lastAction);
+
+		return lastAction;
+	}
+	public clear(): void {
+		this.history = [];
+		this.redoStack = [];
+	}
+
 	private _add(action: HistoryAction) {
 		this.history.push(action);
 
@@ -53,30 +80,6 @@ class AppHistory {
 			let oldest = this.history.shift();
 			if (oldest) this.onOldestRemove(oldest);
 		}
-	}
-
-	add(action: HistoryAction) {
-		this._add(action);
-		this.onRedoClear(this.redoStack);
-		this.redoStack = [];
-	}
-
-	undo() {
-		const lastAction = this.history.pop();
-		if (lastAction) this.redoStack.push(lastAction);
-
-		return lastAction;
-	}
-
-	redo() {
-		const lastAction = this.redoStack.pop();
-		if (lastAction) this.history.push(lastAction);
-
-		return lastAction;
-	}
-	clear(): void {
-		this.history = [];
-		this.redoStack = [];
 	}
 }
 

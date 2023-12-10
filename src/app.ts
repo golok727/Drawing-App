@@ -1,6 +1,6 @@
 import UI from "./ui";
 import AppHistory, { HistoryAction, UndoOrRedo } from "./history";
-import Toolbar, { Tool } from "./toolbar";
+import { Tool } from "./toolbar";
 import Vector from "./vector";
 import Renderer from "./renderer";
 import Viewport from "./viewport";
@@ -292,7 +292,7 @@ class Application {
 		if (this.drag.isDragging()) this.drag.stop();
 	}
 
-	private handlePointerLeave(evt: PointerEvent) {
+	private handlePointerLeave(_evt: PointerEvent) {
 		this.cancelAction();
 	}
 
@@ -392,7 +392,6 @@ class Application {
 	private handleKeyUp(_evt: AppKeyboardEvent) {}
 
 	private handleResize(_evt: UIEvent) {
-		console.log("resize");
 		this.canvas.width = this.canvas.offsetWidth;
 		this.canvas.height = this.canvas.offsetHeight;
 	}

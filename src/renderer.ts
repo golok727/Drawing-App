@@ -73,7 +73,7 @@ class Renderer {
 			strokeElem.setDone(true);
 			strokeElem.calculateBoundingBox();
 			// Add stroke to the history
-			this.addElementToHistory(strokeElem);
+			this._history.addCanvasElement(strokeElem);
 		}
 	}
 	// Rectangle
@@ -120,7 +120,7 @@ class Renderer {
 		if (rectangleElem && rectangleElem instanceof RectangleElement) {
 			rectangleElem.calculateBoundingBox();
 
-			this.addElementToHistory(rectangleElem);
+			this._history.addCanvasElement(rectangleElem);
 		}
 	}
 	// Circle
@@ -148,7 +148,7 @@ class Renderer {
 
 		if (circleElem && circleElem instanceof CircleElement) {
 			circleElem.calculateBoundingBox();
-			this.addElementToHistory(circleElem);
+			this._history.addCanvasElement(circleElem);
 		}
 	}
 
@@ -248,12 +248,6 @@ class Renderer {
 				}
 				break;
 		}
-	}
-	private addElementToHistory(element: CanvasElement) {
-		this._history.add({
-			type: "add_element",
-			element: element,
-		});
 	}
 
 	private historyOnRemoveOldestChange(oldest: HistoryAction) {
