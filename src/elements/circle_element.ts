@@ -43,8 +43,7 @@ export class CircleElement extends CanvasElement {
 		// TODO: convert this into ellipse
 		ctx.arc(this.center.x, this.center.y, this._radius, 0, Math.PI * 2);
 
-		ctx.stroke();
-
+		if (this.styles.strokeColor !== COLORS.NONE) ctx.stroke();
 		if (this.styles.fillColor !== COLORS.NONE) ctx.fill();
 	}
 }

@@ -9,6 +9,8 @@ type Component = { element: Element; handlers: EventHandlers };
 class UI {
 	private components: { element: Element; handlers: EventHandlers }[] = [];
 	private isRegistered = false;
+	private currentStrokeColorSpan: HTMLSpanElement | null = null;
+	private currentFillColorSpan: HTMLSpanElement | null = null;
 	public toolbar: Toolbar | null = null;
 
 	private appContainer = document.getElementById(
@@ -90,7 +92,7 @@ class UI {
 			span.classList.add(
 				"w-5",
 				"h-5",
-				"rounded-full",
+				"rounded-md",
 				"cursor-pointer",
 				"hover:scale-105",
 				"transition-transform"
@@ -98,19 +100,45 @@ class UI {
 			if (value === COLORS.NONE) {
 				span.classList.add("border-[2px]", "border-black");
 			}
+
+			if (type === "stroke" && this.drawingState.strokeColor === value) {
+				this.currentStrokeColorSpan = span;
+				span.classList.add("outline");
+			} else if (type === "fill" && this.drawingState.fillColor === value) {
+				this.currentFillColorSpan = span;
+				span.classList.add("outline");
+			}
+
 			span.style.backgroundColor = value;
 			span.setAttribute("color", value);
 			span.setAttribute("picker-for", type);
 
 			span.addEventListener("click", (evt) => {
 				const span = evt.currentTarget as HTMLSpanElement;
+
+				if (
+					span === this.currentStrokeColorSpan ||
+					span === this.currentFillColorSpan
+				)
+					return;
+
 				const pickerFor = span.getAttribute("picker-for");
-				let color = span.getAttribute("color") ?? COLORS.WHITE;
+				const color = span.getAttribute("color") ?? COLORS.WHITE;
 
 				if (pickerFor === "stroke") {
 					this.drawingState.strokeColor = color;
+
+					this.currentStrokeColorSpan?.classList.remove("outline");
+					span.classList.add("outline");
+
+					this.currentStrokeColorSpan = span;
 				} else {
 					this.drawingState.fillColor = color;
+
+					this.currentFillColorSpan?.classList.remove("outline");
+					span.classList.add("outline");
+
+					this.currentFillColorSpan = span;
 				}
 			});
 

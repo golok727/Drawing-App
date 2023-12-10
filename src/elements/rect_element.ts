@@ -82,7 +82,8 @@ class RectangleElement extends CanvasElement {
 		ctx.strokeStyle = this.styles.strokeColor;
 		ctx.lineWidth = this.styles.strokeWidth;
 		ctx.roundRect(this.x, this.y, this.width, this.height, 0.4);
-		ctx.stroke();
+
+		if (this.styles.strokeColor !== COLORS.NONE) ctx.stroke();
 
 		if (this.styles.fillColor !== COLORS.NONE) ctx.fill();
 	}
