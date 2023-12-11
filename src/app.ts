@@ -28,7 +28,7 @@ class Application {
 
 	private renderer: Renderer;
 	private ui = new UI();
-	private _history = new AppHistory();
+	private history = new AppHistory();
 	private keyboard;
 	private viewport: Viewport;
 
@@ -56,7 +56,7 @@ class Application {
 			this.drawingCtx,
 			this.interactiveCtx,
 			this.roughCanvas,
-			this._history
+			this.history
 		);
 		this.keyboard = new Keyboard(
 			this.handleKeyDown.bind(this),
@@ -321,7 +321,10 @@ class Application {
 		}
 
 		if (this.isCurrentTool("circle") && this.drag.isDragging()) {
-			this.renderer.DrawCircle(this.drag);
+			this.renderer.DrawCircle(
+				this.drag,
+				this.keyboard.isPressed("", { shift: true })
+			);
 		}
 	}
 	// Mouse Up
@@ -373,7 +376,7 @@ class Application {
 	}
 
 	private handleUndo() {
-		const lastAction = this._history.undo();
+		const lastAction = this.history.undo();
 
 		if (!lastAction) return;
 
@@ -381,7 +384,7 @@ class Application {
 	}
 
 	private handleRedo() {
-		const lastAction = this._history.redo();
+		const lastAction = this.history.redo();
 
 		if (!lastAction) return;
 

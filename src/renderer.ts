@@ -141,13 +141,15 @@ class Renderer {
 		this._elements.push(circle);
 	}
 
-	public DrawCircle(drag: Drag) {
+	public DrawCircle(drag: Drag, proportional = false) {
 		if (this._elements.length <= 0) return;
 
 		const circleElem = this.getLastElement();
 
 		if (circleElem && circleElem instanceof CircleElement) {
-			circleElem.setRadius(drag.offset.magnitude());
+			const { x: dx, y: dy } = drag.offset;
+			circleElem.width = dx;
+			circleElem.height = proportional ? dx : dy;
 		}
 	}
 

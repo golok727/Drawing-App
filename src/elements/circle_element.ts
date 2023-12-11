@@ -7,6 +7,8 @@ import CanvasElement, { ElementTypes } from "./element";
 export class CircleElement extends CanvasElement {
 	private center: Vector;
 	private _radius: number = 0;
+	public width = 0;
+	public height = 0;
 
 	constructor(center: Vector) {
 		super(ElementTypes.Circle);
@@ -21,10 +23,10 @@ export class CircleElement extends CanvasElement {
 	}
 	public override calculateBoundingBox(): void {
 		this._boundingBox = new BoundingBox(
-			this.center.x - this.radius / 2,
-			this.center.y - this.radius / 2,
-			this.radius,
-			this.radius
+			this.center.x - this.width / 2,
+			this.center.y - this.height / 2,
+			this.width,
+			this.height
 		);
 	}
 	public override checkIntersection(
@@ -42,8 +44,8 @@ export class CircleElement extends CanvasElement {
 			roughCanvas.ellipse(
 				this.center.x,
 				this.center.y,
-				this.radius,
-				this.radius,
+				this.width,
+				this.height,
 				{
 					bowing: 1.6,
 					fill: this.styles.fillColor,
