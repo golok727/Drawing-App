@@ -6,6 +6,8 @@ import Renderer from "./renderer";
 import Viewport from "./viewport";
 import Keyboard, { AppKeyboardEvent } from "./keyboard";
 import Drag from "./drag";
+import { RoughCanvas } from "roughjs/bin/canvas";
+import rough from "roughjs";
 
 export const MOUSE_BUTTONS = {
 	LMB: 0,
@@ -22,6 +24,7 @@ class Application {
 
 	private drawingCtx!: CanvasRenderingContext2D;
 	private interactiveCtx!: CanvasRenderingContext2D;
+	private roughCanvas!: RoughCanvas;
 
 	private renderer: Renderer;
 	private ui = new UI();
@@ -52,6 +55,7 @@ class Application {
 		this.renderer = new Renderer(
 			this.drawingCtx,
 			this.interactiveCtx,
+			this.roughCanvas,
 			this._history
 		);
 		this.keyboard = new Keyboard(
@@ -160,10 +164,10 @@ class Application {
 		}
 
 		this.drawingCtx = staticCanvas.getContext("2d") as CanvasRenderingContext2D;
-
 		this.interactiveCtx = interactiveCanvas.getContext(
 			"2d"
 		) as CanvasRenderingContext2D;
+		this.roughCanvas = rough.canvas(this.staticCanvas);
 
 		if (!this.drawingCtx)
 			throw new Error("Canvas API is not supported in your browser");

@@ -1,3 +1,4 @@
+import { RoughCanvas } from "roughjs/bin/canvas";
 import BoundingBox from "./bounding-box";
 import CanvasElement from "./elements/element";
 import AppHistory, {
@@ -15,6 +16,7 @@ import CircleElement from "./elements/circle_element";
 class Renderer {
 	private drawingCtx: CanvasRenderingContext2D;
 	private interactiveCtx: CanvasRenderingContext2D;
+	private roughCanvas: RoughCanvas;
 	private _elements: CanvasElement[] = [];
 	private _history: AppHistory;
 	private _toDelete = new Set<CanvasElement>();
@@ -23,11 +25,13 @@ class Renderer {
 	constructor(
 		drawingCtx: CanvasRenderingContext2D,
 		interactiveCtx: CanvasRenderingContext2D,
+		roughCanvas: RoughCanvas,
 		history: AppHistory
 	) {
 		this.drawingCtx = drawingCtx;
 		this._history = history;
 		this.interactiveCtx = interactiveCtx;
+		this.roughCanvas = roughCanvas;
 
 		this._history.onOldestRemove = this.historyOnRemoveOldestChange.bind(this);
 		this._history.onRedoClear = this.historyOnRedoClear.bind(this);
@@ -317,7 +321,7 @@ class Renderer {
 	private drawElements() {
 		for (const element of this.elements) {
 			if (element.isDeleted) continue;
-			element.draw(this.drawingCtx);
+			element.draw(this.drawingCtx, this.roughCanvas);
 			const box = element.boundingBox;
 			if (this._Selected.has(element)) this.__test_boundingBox(box);
 		}

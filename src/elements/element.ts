@@ -1,7 +1,8 @@
 import { CanvasStyles, DefaultCanvasStyles } from "../styles";
-import { v4 as uuidv4 } from "uuid";
+import { nanoid } from "nanoid";
 import Vector from "../vector";
 import BoundingBox from "../bounding-box";
+import { RoughCanvas } from "roughjs/bin/canvas";
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -13,16 +14,18 @@ export const ElementTypes = {
 type ElementType = (typeof ElementTypes)[keyof typeof ElementTypes];
 
 class CanvasElement {
-	protected _id: string = uuidv4();
+	protected _id: string = nanoid();
 	public type: ElementType;
 	public _isDeleted = false; // for easy history purposes
 
+	protected seed: number;
 	protected previousStyles: CanvasStyles = { ...DefaultCanvasStyles };
 	protected styles: CanvasStyles = { ...DefaultCanvasStyles };
 
 	protected _boundingBox = new BoundingBox(0, 0, 0, 0);
 	constructor(type: ElementType) {
 		this.type = type;
+		this.seed = Math.floor(Math.random() * 100);
 	}
 
 	public calculateBoundingBox(): void {}
@@ -60,10 +63,11 @@ class CanvasElement {
 	}
 
 	// Common method to render elements
-	draw(ctx: CanvasRenderingContext2D): void {
+	draw(ctx: CanvasRenderingContext2D, roughCanvas?: RoughCanvas): void {
 		console.warn(
 			`The Draw method for ElementType: ${this.type} should be implemented separately\n CTX:`,
-			ctx
+			ctx,
+			roughCanvas
 		);
 	}
 

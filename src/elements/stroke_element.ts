@@ -70,7 +70,7 @@ export class StrokeElement extends CanvasElement {
 			simulatePressure: true,
 			size: this.styles.strokeWidth,
 			thinning: 0.6,
-			smoothing: 0.7,
+			smoothing: 0.5,
 			streamline: 0.5,
 			easing: (t) => Math.sin((t * Math.PI) / 2), // https://easings.net/#easeOutSine
 		});
@@ -80,7 +80,9 @@ export class StrokeElement extends CanvasElement {
 
 	private freeDraw(ctx: CanvasRenderingContext2D) {
 		if (!this._done) this.generatePath();
+
 		ctx.fillStyle = this.styles.strokeColor;
+
 		ctx.fill(this.computedPath);
 	}
 

@@ -1,3 +1,4 @@
+import { RoughCanvas } from "roughjs/bin/canvas";
 import BoundingBox from "../bounding-box";
 import { COLORS } from "../utils";
 import Vector from "../vector";
@@ -34,17 +35,29 @@ export class CircleElement extends CanvasElement {
 		return this.boundingBox.isIntersecting(point);
 	}
 
-	public override draw(ctx: CanvasRenderingContext2D): void {
-		ctx.beginPath();
-		ctx.fillStyle = this.styles.fillColor;
-		ctx.strokeStyle = this.styles.strokeColor;
-		ctx.lineWidth = this.styles.strokeWidth;
-
-		// TODO: convert this into ellipse
-		ctx.arc(this.center.x, this.center.y, this._radius, 0, Math.PI * 2);
-
-		if (this.styles.strokeColor !== COLORS.NONE) ctx.stroke();
-		if (this.styles.fillColor !== COLORS.NONE) ctx.fill();
+	public override draw(
+		drawingContext: CanvasRenderingContext2D,
+		roughCanvas: RoughCanvas
+	): void {
+		if (roughCanvas) {
+			roughCanvas.arc(
+				this.center.x,
+				this.center.y,
+				this._radius,
+				this.radius,
+				0,
+				Math.PI * 2,
+				false,
+				{
+					fill: this.styles.fillColor + "aa",
+					fillWeight: 3,
+					stroke: this.styles.strokeColor,
+					strokeWidth: this.styles.strokeWidth,
+					seed: this.seed,
+					roughness: 0.5,
+				}
+			);
+		}
 	}
 }
 

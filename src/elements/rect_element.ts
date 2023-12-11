@@ -1,3 +1,4 @@
+import { RoughCanvas } from "roughjs/bin/canvas";
 import BoundingBox from "../bounding-box";
 import { COLORS } from "../utils";
 import Vector from "../vector";
@@ -76,16 +77,23 @@ class RectangleElement extends CanvasElement {
 			this.height
 		);
 	}
-	public override draw(ctx: CanvasRenderingContext2D): void {
-		ctx.beginPath();
-		ctx.fillStyle = this.styles.fillColor;
-		ctx.strokeStyle = this.styles.strokeColor;
-		ctx.lineWidth = this.styles.strokeWidth;
-		ctx.roundRect(this.x, this.y, this.width, this.height, 0.4);
-
-		if (this.styles.strokeColor !== COLORS.NONE) ctx.stroke();
-
-		if (this.styles.fillColor !== COLORS.NONE) ctx.fill();
+	public override draw(
+		_drawingCtx: CanvasRenderingContext2D,
+		roughCanvas: RoughCanvas
+	): void {
+		if (roughCanvas) {
+			roughCanvas.rectangle(this.x, this.y, this.width, this.height, {
+				fill:
+					this.styles.fillColor !== COLORS.NONE
+						? this.styles.fillColor + "aa"
+						: COLORS.NONE,
+				hachureAngle: 60, // angle of hachure,
+				hachureGap: this.styles.strokeWidth * 4,
+				stroke: this.styles.strokeColor,
+				strokeWidth: this.styles.strokeWidth,
+				seed: this.seed,
+			});
+		}
 	}
 }
 

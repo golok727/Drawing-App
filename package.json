@@ -18,7 +18,8 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
+    "nanoid": "^5.0.4",
     "perfect-freehand": "^1.2.0",
-    "uuid": "^9.0.1"
+    "roughjs": "^4.6.6"
   }
 }

@@ -1,6 +1,6 @@
 export const COLORS = {
 	BLACK: "#000",
-	WHITE: "#ebebeb",
+	WHITE: "#e3e3e3",
 	RED: "#ff0000",
 	GREEN: "#00ff00",
 	BLUE: "#0000ff",
@@ -10,6 +10,12 @@ export const COLORS = {
 	ORANGE: "#ff6224",
 	NONE: "",
 } as const;
+
+export const filters = {
+	blur(amount: number, unit: "px" | "rem" = "px") {
+		return `blur(${amount}${unit})`;
+	},
+};
 
 export const average = (a: number, b: number) => (a + b) / 2;
 export function getSvgPathFromStroke(points: number[][], closed = true) {
