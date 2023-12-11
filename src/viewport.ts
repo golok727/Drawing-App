@@ -51,6 +51,9 @@ class Viewport {
 	public get offset() {
 		return this._offset.add(this.dragState.offset);
 	}
+	public get isPanning() {
+		return this.dragState.isDragging();
+	}
 
 	public resetZoom() {
 		this._zoom = 1;

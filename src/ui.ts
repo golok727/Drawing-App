@@ -19,7 +19,7 @@ class UI {
 	public readonly drawingState = {
 		strokeColor: COLORS.WHITE as string,
 		fillColor: COLORS.NONE as string,
-		strokeWidth: 8,
+		strokeWidth: 4,
 	};
 
 	constructor() {

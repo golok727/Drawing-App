@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import Vector from "../vector";
 import BoundingBox from "../bounding-box";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { randomInteger } from "../random";
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -25,7 +26,7 @@ class CanvasElement {
 	protected _boundingBox = new BoundingBox(0, 0, 0, 0);
 	constructor(type: ElementType) {
 		this.type = type;
-		this.seed = Math.floor(Math.random() * 100);
+		this.seed = randomInteger();
 	}
 
 	public calculateBoundingBox(): void {}

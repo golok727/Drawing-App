@@ -340,7 +340,6 @@ class Renderer {
 			box.h + 2 * padding
 		);
 		this.interactiveCtx.stroke();
-		this.interactiveCtx.setLineDash([]);
 	}
 }
 

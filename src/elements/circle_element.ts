@@ -1,6 +1,5 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import BoundingBox from "../bounding-box";
-import { COLORS } from "../utils";
 import Vector from "../vector";
 import CanvasElement, { ElementTypes } from "./element";
 
@@ -22,10 +21,10 @@ export class CircleElement extends CanvasElement {
 	}
 	public override calculateBoundingBox(): void {
 		this._boundingBox = new BoundingBox(
-			this.center.x - this.radius,
-			this.center.y - this.radius,
-			this.radius * 2,
-			this.radius * 2
+			this.center.x - this.radius / 2,
+			this.center.y - this.radius / 2,
+			this.radius,
+			this.radius
 		);
 	}
 	public override checkIntersection(
@@ -36,25 +35,25 @@ export class CircleElement extends CanvasElement {
 	}
 
 	public override draw(
-		drawingContext: CanvasRenderingContext2D,
+		_drawingContext: CanvasRenderingContext2D,
 		roughCanvas: RoughCanvas
 	): void {
 		if (roughCanvas) {
-			roughCanvas.arc(
+			roughCanvas.ellipse(
 				this.center.x,
 				this.center.y,
-				this._radius,
 				this.radius,
-				0,
-				Math.PI * 2,
-				false,
+				this.radius,
 				{
-					fill: this.styles.fillColor + "aa",
+					bowing: 1.6,
+					fill: this.styles.fillColor,
 					fillWeight: 3,
 					stroke: this.styles.strokeColor,
 					strokeWidth: this.styles.strokeWidth,
 					seed: this.seed,
-					roughness: 0.5,
+					hachureAngle: 60, // angle of hachure,
+					hachureGap: this.styles.strokeWidth * 5,
+					roughness: 0.1,
 				}
 			);
 		}
