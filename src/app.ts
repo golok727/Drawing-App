@@ -148,7 +148,7 @@ class Application {
 		container.style.position = "relative";
 
 		interactiveCanvas.id = "canvas-interactive";
-		interactiveCanvas.id = "canvas-static";
+		staticCanvas.id = "canvas-static";
 
 		interactiveCanvas.style.position = "absolute";
 		interactiveCanvas.style.inset = "0";
