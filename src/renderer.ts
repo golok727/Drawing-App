@@ -12,11 +12,13 @@ import Vector from "./vector";
 import Drag from "./drag";
 import RectangleElement from "./elements/rect_element";
 import CircleElement from "./elements/circle_element";
+import Viewport from "./viewport";
 
 class Renderer {
 	private drawingCtx: CanvasRenderingContext2D;
 	private interactiveCtx: CanvasRenderingContext2D;
 	private roughCanvas: RoughCanvas;
+	private viewport: Viewport;
 	private _elements: CanvasElement[] = [];
 	private _history: AppHistory;
 	private _toDelete = new Set<CanvasElement>();
@@ -26,13 +28,14 @@ class Renderer {
 		drawingCtx: CanvasRenderingContext2D,
 		interactiveCtx: CanvasRenderingContext2D,
 		roughCanvas: RoughCanvas,
+		viewport: Viewport,
 		history: AppHistory
 	) {
 		this.drawingCtx = drawingCtx;
 		this._history = history;
 		this.interactiveCtx = interactiveCtx;
 		this.roughCanvas = roughCanvas;
-
+		this.viewport = viewport;
 		this._history.onOldestRemove = this.historyOnRemoveOldestChange.bind(this);
 		this._history.onRedoClear = this.historyOnRedoClear.bind(this);
 	}
@@ -321,8 +324,9 @@ class Renderer {
 	}
 
 	private drawElements() {
-		for (const element of this.elements) {
-			if (element.isDeleted) continue;
+		const elementsInsideView = this.elements.filter((elem) => !elem.isDeleted);
+
+		for (const element of elementsInsideView) {
 			element.draw(this.drawingCtx, this.roughCanvas);
 			const box = element.boundingBox;
 			if (this._Selected.has(element)) this.__test_boundingBox(box);

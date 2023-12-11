@@ -52,21 +52,24 @@ class Application {
 	constructor(container: HTMLElement) {
 		this.setupCanvas(container);
 
-		this.renderer = new Renderer(
-			this.drawingCtx,
-			this.interactiveCtx,
-			this.roughCanvas,
-			this.history
-		);
 		this.keyboard = new Keyboard(
 			this.handleKeyDown.bind(this),
 			this.handleKeyUp.bind(this)
 		);
+
 		this.viewport = new Viewport(
 			this.interactiveCtx,
 			this.keyboard,
 			this,
 			this.ui
+		);
+
+		this.renderer = new Renderer(
+			this.drawingCtx,
+			this.interactiveCtx,
+			this.roughCanvas,
+			this.viewport,
+			this.history
 		);
 
 		this.addEventListeners();
