@@ -85,6 +85,8 @@ class CanvasElement {
 		};
 	}
 	applyStyles(ctx: CanvasRenderingContext2D, isStrokeElement: boolean = false) {
+		if (this.isDeleted || this.isStagedForDelete) return;
+
 		ctx.fillStyle = isStrokeElement
 			? this.styles.strokeColor
 			: this.styles.fillColor;

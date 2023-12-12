@@ -28,10 +28,7 @@ class Keyboard {
 	};
 	onKeyDownHandlers: KeyboardEventHandler[] = [];
 	onKeyUpHandlers: KeyboardEventHandler[] = [];
-	private refHandlers!: {
-		keyDownHandler: (_: KeyboardEvent) => void;
-		keyUpHandler: (_: KeyboardEvent) => void;
-	};
+	private _eventListenerDestroyFn?: () => void;
 
 	constructor(
 		onKeyDown?: KeyboardEventHandler,
@@ -44,8 +41,7 @@ class Keyboard {
 	}
 
 	public destroy() {
-		document.removeEventListener("keydown", this.refHandlers.keyDownHandler);
-		document.removeEventListener("keyup", this.refHandlers.keyUpHandler);
+		this.removeEventListeners();
 		this.onKeyDownHandlers = [];
 		this.onKeyUpHandlers = [];
 	}
@@ -123,12 +119,22 @@ class Keyboard {
 	}
 
 	private addEventListeners() {
-		this.refHandlers = { ...this.refHandlers };
-		this.refHandlers.keyDownHandler = this.handleKeyDown.bind(this);
-		this.refHandlers.keyUpHandler = this.handleKeyUp.bind(this);
+		const keyDownHandler = this.handleKeyDown.bind(this);
+		const keyUpHandler = this.handleKeyUp.bind(this);
 
-		document.addEventListener("keydown", this.refHandlers.keyDownHandler);
-		document.addEventListener("keyup", this.refHandlers.keyUpHandler);
+		document.addEventListener("keydown", keyDownHandler);
+		document.addEventListener("keyup", keyUpHandler);
+
+		this._eventListenerDestroyFn = () => {
+			document.removeEventListener("keydown", keyDownHandler);
+			document.removeEventListener("keyup", keyUpHandler);
+		};
+	}
+	private removeEventListeners() {
+		this._eventListenerDestroyFn && this._eventListenerDestroyFn();
+		this.onKeyDownHandlers = [];
+		this.onKeyUpHandlers = [];
+		this._eventListenerDestroyFn = undefined;
 	}
 }
 

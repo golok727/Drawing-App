@@ -1,67 +1,55 @@
 import Application, { MOUSE_BUTTONS } from "./app";
 import Drag from "./drag";
-import Keyboard from "./keyboard";
-import Renderer from "./renderer";
-import UI from "./ui";
 import Vector from "./vector";
-import Viewport from "./viewport";
 
 class InteractiveCanvas {
 	ctx: CanvasRenderingContext2D;
 	drawingCtx: CanvasRenderingContext2D;
-	renderer: Renderer;
-	viewport: Viewport;
-	history: History;
-	ui: UI;
 	app: Application;
-	keyboard: Keyboard;
 	drag = new Drag();
 
 	private isDrawing = false;
 	private isErasing = false;
 
 	private mouse = new Vector(0);
-
-	private refHandlers!: {
-		pointerDownHandler: (evt: PointerEvent) => void;
-		pointerUpHandler: (evt: PointerEvent) => void;
-		pointerMoveHandler: (evt: PointerEvent) => void;
-		pointerLeaveHandler: (evt: PointerEvent) => void;
-	};
+	private _eventListenersDestroyFn?: () => void;
 
 	constructor(
 		contexts: {
 			interactiveCanvasCtx: CanvasRenderingContext2D;
 			drawingCanvasCtx: CanvasRenderingContext2D;
 		},
-		app: Application,
-		renderer: Renderer,
-		keyboard: Keyboard,
-		viewport: Viewport,
-		history: History,
-		ui: UI
+		app: Application
 	) {
 		this.ctx = contexts.interactiveCanvasCtx;
 		this.drawingCtx = contexts.drawingCanvasCtx;
 		this.app = app;
-		this.history = history;
-		this.renderer = renderer;
-		this.viewport = viewport;
-		this.keyboard = keyboard;
-		this.ui = ui;
 
 		this.addEventListeners();
 	}
 
+	get cWidth() {
+		return this.ctx.canvas.offsetWidth;
+	}
+	get cHeight() {
+		return this.ctx.canvas.offsetHeight;
+	}
+
+	public draw() {}
+
+	public render(cb: () => void) {
+		this.ctx.clearRect(0, 0, this.cWidth, this.cHeight);
+		this.ctx.save();
+		this.ctx.translate(this.app.viewport.center.x, this.app.viewport.center.y);
+		this.ctx.scale(1 / this.app.viewport.zoom, 1 / this.app.viewport.zoom);
+		this.ctx.translate(this.app.viewport.offset.x, this.app.viewport.offset.y);
+
+		cb();
+		this.ctx.restore();
+	}
+
 	public destroy() {
-		const { pointerDownHandler, pointerMoveHandler, pointerUpHandler } =
-			this.refHandlers;
-
-		const interactiveCanvas = this.ctx.canvas;
-
-		interactiveCanvas.removeEventListener("pointerdown", pointerDownHandler);
-		interactiveCanvas.removeEventListener("pointerup", pointerUpHandler);
-		interactiveCanvas.removeEventListener("pointermove", pointerMoveHandler);
+		this.removeEventListeners();
 	}
 
 	private startDrawing() {
@@ -78,7 +66,7 @@ class InteractiveCanvas {
 	}
 
 	private cancelAction() {
-		if (this.isErasing) this.renderer.cancelEraser();
+		if (this.isErasing) this.app.renderer.cancelEraser();
 
 		this.endDrawing();
 		this.endErasing();
@@ -94,110 +82,110 @@ class InteractiveCanvas {
 
 	/* Event Handlers  */
 	private handlePointerDown(evt: MouseEvent) {
-		this.ui.disableAppPointerEvents();
-		this.setMouse(this.viewport.getMouse(evt));
+		this.app.ui.disableAppPointerEvents();
+		this.setMouse(this.app.viewport.getMouse(evt));
 
-		if (this.keyboard.isPressed("space")) return;
+		if (this.app.keyboard.isPressed("space")) return;
 
 		// For drag Ones
 		if (evt.button === MOUSE_BUTTONS.LMB) {
 			this.drag.dragStart(this.mouse.clone());
 
 			if (this.app.isCurrentTool("selector")) {
-				this.renderer.DeselectAll();
-				const element = this.renderer.getIntersectingElement(
+				this.app.renderer.DeselectAll();
+				const element = this.app.renderer.getIntersectingElement(
 					this.getMouseLocation()
 				);
-				if (element) this.renderer.Select(element);
+				if (element) this.app.renderer.Select(element);
 
 				return;
 			}
 			// Brush Mode
 			if (this.app.isCurrentTool("brush")) {
-				this.renderer.onBeginStroke(this.mouse.clone(), {
-					...this.ui.drawingState,
+				this.app.renderer.onBeginStroke(this.mouse.clone(), {
+					...this.app.ui.drawingState,
 				});
 				this.startDrawing();
 			}
 			// Eraser Mode
 			else if (this.app.isCurrentTool("eraser")) {
 				this.startErasing();
-				this.renderer.Erase(this.getMouseLocation());
+				this.app.renderer.Erase(this.getMouseLocation());
 			}
 
 			// Rectangle
 			else if (this.app.isCurrentTool("rect")) {
-				this.renderer.BeginRect(
+				this.app.renderer.BeginRect(
 					this.getMouseLocation(),
 					{
-						...this.ui.drawingState,
+						...this.app.ui.drawingState,
 					},
 					0.5
 				);
 			}
 			// Circle
 			else if (this.app.isCurrentTool("circle")) {
-				this.renderer.BeginCircle(this.getMouseLocation(), {
-					...this.ui.drawingState,
+				this.app.renderer.BeginCircle(this.getMouseLocation(), {
+					...this.app.ui.drawingState,
 				});
 			}
 		}
 	}
 	// Mouse Move
 	private handlePointerMove(evt: MouseEvent) {
-		this.setMouse(this.viewport.getMouse(evt));
+		this.setMouse(this.app.viewport.getMouse(evt));
 
-		if (this.keyboard.isPressed("space")) return;
+		if (this.app.keyboard.isPressed("space")) return;
 
 		// Dragger
 		this.drag.dragTo(this.mouse.clone());
 
 		// Draw
 		if (this.app.isCurrentTool("brush") && this.isDrawing) {
-			this.renderer.onStroke(Vector.from(this.getMouseLocation()));
+			this.app.renderer.onStroke(Vector.from(this.getMouseLocation()));
 		}
 
 		// Erase
 		if (this.app.isCurrentTool("eraser") && this.isErasing) {
-			this.renderer.Erase(this.getMouseLocation());
+			this.app.renderer.Erase(this.getMouseLocation());
 		}
 
 		if (this.app.isCurrentTool("rect") && this.drag.isDragging()) {
-			this.renderer.DrawRect(
+			this.app.renderer.DrawRect(
 				this.drag,
-				this.keyboard.isPressed("", { shift: true })
+				this.app.keyboard.isPressed("", { shift: true })
 			);
 		}
 
 		if (this.app.isCurrentTool("circle") && this.drag.isDragging()) {
-			this.renderer.DrawCircle(
+			this.app.renderer.DrawCircle(
 				this.drag,
-				this.keyboard.isPressed("", { shift: true })
+				this.app.keyboard.isPressed("", { shift: true })
 			);
 		}
 	}
 	// Mouse Up
 	private handlePointerUp(evt: MouseEvent) {
-		this.ui.enableAppPointerEvents();
+		this.app.ui.enableAppPointerEvents();
 		this.endDrawing();
 		this.endErasing();
 
 		// Brush
 		if (evt.button === MOUSE_BUTTONS.LMB) {
 			if (this.app.isCurrentTool("brush")) {
-				this.renderer.onStrokeEnd();
+				this.app.renderer.onStrokeEnd();
 			}
 			// Eraser
 			if (this.app.isCurrentTool("eraser")) {
-				this.renderer.onEraseEnd();
+				this.app.renderer.onEraseEnd();
 			}
 
 			if (this.app.isCurrentTool("rect")) {
-				this.renderer.RectEnd();
+				this.app.renderer.RectEnd();
 			}
 
 			if (this.app.isCurrentTool("circle")) {
-				this.renderer.EndCircle();
+				this.app.renderer.EndCircle();
 			}
 		}
 		if (this.drag.isDragging()) this.drag.stop();
@@ -208,25 +196,29 @@ class InteractiveCanvas {
 	}
 
 	// Register Events
+
 	private addEventListeners() {
 		const pointerDownHandler = this.handlePointerDown.bind(this);
 		const pointerUpHandler = this.handlePointerUp.bind(this);
 		const pointerMoveHandler = this.handlePointerMove.bind(this);
 		const pointerLeaveHandler = this.handlePointerLeave.bind(this);
 
-		this.refHandlers = {
-			...this.refHandlers,
-			pointerDownHandler,
-			pointerMoveHandler,
-			pointerUpHandler,
-			pointerLeaveHandler,
-		};
-
 		const { canvas: interactiveCanvas } = this.ctx;
 		interactiveCanvas.addEventListener("pointerdown", pointerDownHandler);
 		interactiveCanvas.addEventListener("pointerup", pointerUpHandler);
 		interactiveCanvas.addEventListener("pointermove", pointerMoveHandler);
 		document.addEventListener("pointerleave", pointerLeaveHandler);
+
+		this._eventListenersDestroyFn = () => {
+			interactiveCanvas.removeEventListener("pointerdown", pointerDownHandler);
+			interactiveCanvas.removeEventListener("pointerup", pointerUpHandler);
+			interactiveCanvas.removeEventListener("pointermove", pointerMoveHandler);
+			document.removeEventListener("pointerleave", pointerLeaveHandler);
+		};
+	}
+
+	private removeEventListeners() {
+		this._eventListenersDestroyFn && this._eventListenersDestroyFn();
 	}
 }
 

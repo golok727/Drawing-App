@@ -330,7 +330,7 @@ class Renderer {
 		for (const element of this.getElementsInView()) {
 			if (element.isStagedForDelete) {
 				this.drawingCtx.save();
-				this.drawingCtx.globalAlpha = 0.3;
+				this.drawingCtx.globalAlpha = 0.5;
 				element.draw(this.drawingCtx, this.roughCanvas);
 				this.drawingCtx.restore();
 			} else {

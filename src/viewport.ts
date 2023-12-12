@@ -18,6 +18,8 @@ class Viewport {
 	private _zoom = 1;
 	private _offset: Vector;
 
+	private _eventListenerDestroyFn?: () => void;
+
 	private dragState = new Drag();
 	constructor(
 		interactiveCtx: CanvasRenderingContext2D,
@@ -43,6 +45,10 @@ class Viewport {
 		if (!this.zoomDisplay) {
 			console.warn("Zoom value display container is empty");
 		}
+	}
+
+	public destroy() {
+		this.removeEventListeners();
 	}
 
 	public get zoom() {
@@ -127,23 +133,6 @@ class Viewport {
 		}
 	}
 
-	private addEventListeners() {
-		const { interactiveCanvas } = this;
-		interactiveCanvas.addEventListener("wheel", this.handleWheel.bind(this));
-		interactiveCanvas.addEventListener(
-			"pointerdown",
-			this.handlePointerDown.bind(this)
-		);
-		interactiveCanvas.addEventListener(
-			"pointermove",
-			this.handlePointerMove.bind(this)
-		);
-		interactiveCanvas.addEventListener(
-			"pointerup",
-			this.handlePointerUp.bind(this)
-		);
-	}
-
 	private handlePointerDown(evt: PointerEvent) {
 		if (
 			(this.keyboard.isPressed("space") && evt.button == MOUSE_BUTTONS.LMB) ||
@@ -172,6 +161,30 @@ class Viewport {
 	private handleWheel(evt: WheelEvent) {
 		const direction = Math.sign(evt.deltaY);
 		this.zoomCanvas(direction);
+	}
+
+	private addEventListeners() {
+		const { interactiveCanvas } = this;
+		const handleWheel = this.handleWheel.bind(this);
+		const handlePointerDown = this.handlePointerDown.bind(this);
+		const handlePointerMove = this.handlePointerMove.bind(this);
+		const handlePointerUp = this.handlePointerUp.bind(this);
+
+		interactiveCanvas.addEventListener("wheel", handleWheel);
+		interactiveCanvas.addEventListener("pointerdown", handlePointerDown);
+		interactiveCanvas.addEventListener("pointermove", handlePointerMove);
+		interactiveCanvas.addEventListener("pointerup", handlePointerUp);
+
+		// Destroy
+		this._eventListenerDestroyFn = () => {
+			interactiveCanvas.removeEventListener("wheel", handleWheel);
+			interactiveCanvas.removeEventListener("pointerdown", handlePointerDown);
+			interactiveCanvas.removeEventListener("pointermove", handlePointerMove);
+			interactiveCanvas.removeEventListener("pointerup", handlePointerUp);
+		};
+	}
+	private removeEventListeners() {
+		this._eventListenerDestroyFn && this._eventListenerDestroyFn();
 	}
 }
 export default Viewport;
