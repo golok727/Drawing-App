@@ -49,7 +49,18 @@ export class StrokeElement extends CanvasElement {
 		point: Vector,
 		ctx: CanvasRenderingContext2D
 	): boolean {
-		return ctx.isPointInPath(this.computedPath, point.x, point.y, "nonzero");
+		const isPointOnPath = ctx.isPointInPath(
+			this.computedPath,
+			point.x,
+			point.y,
+			"nonzero"
+		);
+		if (isPointOnPath) return true;
+		else {
+			const area = this.boundingBox.w * this.boundingBox.h;
+			if (area <= 10) return true;
+			else return false;
+		}
 	}
 
 	public smooth() {
