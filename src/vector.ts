@@ -30,6 +30,10 @@ class Vector {
 		return v1.x === v2.x && v1.y === v2.y && v1.z === v2.z;
 	}
 
+	static distance(p1: Vector, p2: Vector) {
+		return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+	}
+
 	clone() {
 		return Vector.from(this);
 	}

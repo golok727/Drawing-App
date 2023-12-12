@@ -87,7 +87,8 @@ class InteractiveCanvas {
 		this.mouse.x = newPos.x;
 		this.mouse.y = newPos.y;
 	}
-	private getMouseLocation(): Vector {
+
+	getMouseLocation(): Vector {
 		return this.mouse.clone();
 	}
 

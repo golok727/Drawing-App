@@ -182,10 +182,6 @@ class Renderer {
 			if (this._toDelete.has(element)) continue;
 
 			if (element.checkIntersection(point, this.drawingCtx)) {
-				// element.setStyles({
-				// 	strokeColor: "rgba(86, 86, 86, 0.40)",
-				// 	fillColor: "rgba(86, 86, 86, 0.40)",
-				// });
 				element.stageForDelete();
 				this._toDelete.add(element);
 			}
