@@ -8,7 +8,6 @@ import BoundingBox from "../bounding-box";
 // Strokes
 export class StrokeElement extends CanvasElement {
 	private _points: Vector[] = [];
-	private _done = false;
 	private computedPath!: Path2D;
 
 	constructor(styles?: Partial<CanvasStyles>) {
@@ -21,10 +20,7 @@ export class StrokeElement extends CanvasElement {
 	public addPoint(point: Vector) {
 		this._points.push(point);
 	}
-	public setDone(val: boolean) {
-		this._done = val;
-		this.calculateBoundingBox();
-	}
+
 	public override calculateBoundingBox(): void {
 		if (this._points.length === 0) return;
 		let minX = this._points[0].x;
@@ -90,7 +86,7 @@ export class StrokeElement extends CanvasElement {
 	}
 
 	private freeDraw(ctx: CanvasRenderingContext2D) {
-		if (!this._done) this.generatePath();
+		if (!this.isDone) this.generatePath();
 
 		ctx.save();
 		ctx.shadowBlur = 3;

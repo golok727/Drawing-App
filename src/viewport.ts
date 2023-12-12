@@ -1,6 +1,6 @@
 import Application, { MOUSE_BUTTONS } from "./app";
-import BoundingBox from "./bounding-box";
 import Drag from "./drag";
+import CanvasElement from "./elements/element";
 import Keyboard, { AppKeyboardEvent } from "./keyboard";
 import UI from "./ui";
 import Vector from "./vector";
@@ -81,26 +81,32 @@ class Viewport {
 	public getPointOnViewport(point: Vector) {
 		return point.subtract(this.center).scale(this._zoom).subtract(this._offset);
 	}
-	public isInside(elementBoundingBox: BoundingBox): boolean {
+	public isInViewport(element: CanvasElement): boolean {
 		// Check if the element's bounding box is inside the viewport's bounds
-		const viewBounds = this.getInnerViewBounds();
+		if (!element.isDone) return true;
 
-		return elementBoundingBox.isInside(viewBounds);
+		const { topLeft, bottomRight } = this.getInnerViewBoundsInSceneCords();
+
+		const {
+			tl: { x: x1, y: y1 },
+			br: { x: x2, y: y2 },
+		} = element.boundingBox;
+
+		return (
+			topLeft.x <= x2 &&
+			topLeft.y <= y2 &&
+			bottomRight.x >= x1 &&
+			bottomRight.y >= y1
+		);
 	}
 
-	public updateViewBounds() {}
-
-	private getInnerViewBounds() {
+	private getInnerViewBoundsInSceneCords() {
 		const topLeft = this.getPointOnViewport(new Vector(0, 0));
 		const bottomRight = this.getPointOnViewport(
 			new Vector(this.interactiveCanvas.width, this.interactiveCanvas.height)
 		);
-		const x = Math.min(topLeft.x, bottomRight.x);
-		const y = Math.min(topLeft.y, bottomRight.y);
-		const width = Math.abs(topLeft.x - bottomRight.x);
-		const height = Math.abs(topLeft.y - bottomRight.y);
 
-		return new BoundingBox(x, y, width, height);
+		return { topLeft, bottomRight };
 	}
 
 	private updateZoomDisplay() {

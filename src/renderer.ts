@@ -131,7 +131,7 @@ class Renderer {
 		const rectangleElem = this.getLastElement();
 
 		if (rectangleElem && rectangleElem instanceof RectangleElement) {
-			rectangleElem.calculateBoundingBox();
+			rectangleElem.setDone(true);
 
 			this._history.addCanvasElement(rectangleElem);
 		}
@@ -162,14 +162,14 @@ class Renderer {
 		const circleElem = this.getLastElement();
 
 		if (circleElem && circleElem instanceof CircleElement) {
-			circleElem.calculateBoundingBox();
+			circleElem.setDone(true);
 			this._history.addCanvasElement(circleElem);
 		}
 	}
 
 	public cancelEraser() {
 		for (const elem of this._toDelete) {
-			elem.revertToPreviousStyles();
+			elem.unStageFromDelete();
 		}
 		this._toDelete.clear();
 	}
@@ -182,10 +182,11 @@ class Renderer {
 			if (this._toDelete.has(element)) continue;
 
 			if (element.checkIntersection(point, this.drawingCtx)) {
-				element.setStyles({
-					strokeColor: "rgba(86, 86, 86, 0.40)",
-					fillColor: "rgba(86, 86, 86, 0.40)",
-				});
+				// element.setStyles({
+				// 	strokeColor: "rgba(86, 86, 86, 0.40)",
+				// 	fillColor: "rgba(86, 86, 86, 0.40)",
+				// });
+				element.stageForDelete();
 				this._toDelete.add(element);
 			}
 		}
@@ -225,8 +226,14 @@ class Renderer {
 	}
 
 	private getNearestBoundingElements(point: Vector) {
+		return this.getElementsInView().filter((elem) =>
+			elem.boundingBox.isIntersecting(point)
+		);
+	}
+
+	private getElementsInView() {
 		return this._elements.filter(
-			(elem) => elem.boundingBox.isIntersecting(point) && !elem._isDeleted
+			(elem) => this.viewport.isInViewport(elem) && !elem.isDeleted
 		);
 	}
 	private getLastElement() {
@@ -324,10 +331,16 @@ class Renderer {
 	}
 
 	private drawElements() {
-		const elementsInsideView = this.elements.filter((elem) => !elem.isDeleted);
+		for (const element of this.getElementsInView()) {
+			if (element.isStagedForDelete) {
+				this.drawingCtx.save();
+				this.drawingCtx.globalAlpha = 0.3;
+				element.draw(this.drawingCtx, this.roughCanvas);
+				this.drawingCtx.restore();
+			} else {
+				element.draw(this.drawingCtx, this.roughCanvas);
+			}
 
-		for (const element of elementsInsideView) {
-			element.draw(this.drawingCtx, this.roughCanvas);
 			const box = element.boundingBox;
 			if (this._Selected.has(element)) this.__test_boundingBox(box);
 		}

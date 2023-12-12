@@ -18,9 +18,10 @@ class CanvasElement {
 	protected _id: string = nanoid();
 	public type: ElementType;
 	public _isDeleted = false; // for easy history purposes
+	public isStagedForDelete = false;
+	public isDone = false;
 
 	protected seed: number;
-	protected previousStyles: CanvasStyles = { ...DefaultCanvasStyles };
 	protected styles: CanvasStyles = { ...DefaultCanvasStyles };
 
 	protected _boundingBox = new BoundingBox(0, 0, 0, 0);
@@ -39,13 +40,20 @@ class CanvasElement {
 		return this._isDeleted;
 	}
 
+	stageForDelete() {
+		this.isStagedForDelete = true;
+	}
+	unStageFromDelete() {
+		this.isStagedForDelete = false;
+	}
+
 	delete() {
-		this.revertToPreviousStyles();
-		this.previousStyles = this.styles;
+		// this.revertToPreviousStyles();
+		// this.previousStyles = this.styles;
 		this._isDeleted = true;
 	}
 	recover() {
-		this.revertToPreviousStyles();
+		this.isStagedForDelete = false;
 		this._isDeleted = false;
 	}
 	// Use to get data saving
@@ -53,13 +61,13 @@ class CanvasElement {
 		console.warn("getData Should be implemented for data storage");
 	}
 
-	revertToPreviousStyles() {
-		const temp = { ...this.previousStyles };
-		this.previousStyles = this.styles;
-		this.styles = temp;
+	setDone(val: boolean) {
+		this.isDone = val;
+
+		if (this.isDone) this.calculateBoundingBox();
 	}
+
 	setStyles(newStyles: Partial<CanvasStyles>) {
-		this.previousStyles = { ...this.styles };
 		this.styles = { ...this.styles, ...newStyles };
 	}
 
