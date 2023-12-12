@@ -3,7 +3,7 @@ import { getStroke } from "perfect-freehand";
 import { getSvgPathFromStroke } from "../utils";
 import Vector from "../vector";
 import { CanvasStyles } from "../styles";
-import BoundingBox from "../bounding-box";
+import BoundingBox from "../boundingBox";
 
 // Strokes
 export class StrokeElement extends CanvasElement {

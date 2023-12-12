@@ -1,7 +1,7 @@
 import { CanvasStyles, DefaultCanvasStyles } from "../styles";
 import { nanoid } from "nanoid";
 import Vector from "../vector";
-import BoundingBox from "../bounding-box";
+import BoundingBox from "../boundingBox";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { randomInteger } from "../random";
 import { Options as RoughOptions } from "roughjs/bin/core";

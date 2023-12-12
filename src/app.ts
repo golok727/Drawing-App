@@ -7,6 +7,7 @@ import Keyboard, { AppKeyboardEvent } from "./keyboard";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import rough from "roughjs";
 import InteractiveCanvas from "./interactiveCanvas";
+import StaticCanvas from "./staticCanvas";
 
 export const MOUSE_BUTTONS = {
 	LMB: 0,
@@ -23,6 +24,7 @@ class Application {
 		document.createElement("canvas");
 
 	private interactiveCanvas: InteractiveCanvas;
+	private staticCanvas: StaticCanvas;
 
 	private drawingCtx!: CanvasRenderingContext2D;
 	private interactiveCtx!: CanvasRenderingContext2D;
@@ -64,13 +66,10 @@ class Application {
 		this.addEventListeners();
 		this.setupUI();
 		this.ui.makeToolBar(this.setTool.bind(this));
-		this.interactiveCanvas = new InteractiveCanvas(
-			{
-				interactiveCanvasCtx: this.interactiveCtx,
-				drawingCanvasCtx: this.drawingCtx,
-			},
-			this
-		);
+
+		this.interactiveCanvas = new InteractiveCanvas(this);
+
+		this.staticCanvas = new StaticCanvas(this.renderer, this.viewport);
 	}
 	get cWidth() {
 		return this.staticCanvasElement.offsetWidth;
@@ -87,22 +86,8 @@ class Application {
 	}
 
 	public render() {
-		const { drawingCtx } = this;
-
-		drawingCtx.fillStyle = "black";
-		drawingCtx.clearRect(0, 0, this.cWidth, this.cHeight);
-
-		drawingCtx.fillRect(0, 0, this.cWidth, this.cHeight);
-
-		drawingCtx.save();
-		drawingCtx.translate(this.viewport.center.x, this.viewport.center.y);
-		drawingCtx.scale(1 / this.viewport.zoom, 1 / this.viewport.zoom);
-		drawingCtx.translate(this.viewport.offset.x, this.viewport.offset.y);
-
-		this.interactiveCanvas.render(() => {
-			this.renderer.Render();
-		});
-		drawingCtx.restore();
+		this.interactiveCanvas.render();
+		this.staticCanvas.render();
 	}
 
 	private setupCanvas(container: HTMLElement) {
@@ -247,7 +232,7 @@ class Application {
 		}
 
 		if (isPressed("escape")) {
-			// this.cancelAction();
+			this.interactiveCanvas.cancelAction();
 		}
 
 		if (isPressed("=")) {

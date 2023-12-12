@@ -1,5 +1,5 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
-import BoundingBox from "../bounding-box";
+import BoundingBox from "../boundingBox";
 import { COLORS } from "../utils";
 import Vector from "../vector";
 import CanvasElement, { ElementTypes } from "./element";

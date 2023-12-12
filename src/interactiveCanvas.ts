@@ -14,16 +14,11 @@ class InteractiveCanvas {
 	private mouse = new Vector(0);
 	private _eventListenersDestroyFn?: () => void;
 
-	constructor(
-		contexts: {
-			interactiveCanvasCtx: CanvasRenderingContext2D;
-			drawingCanvasCtx: CanvasRenderingContext2D;
-		},
-		app: Application
-	) {
-		this.ctx = contexts.interactiveCanvasCtx;
-		this.drawingCtx = contexts.drawingCanvasCtx;
+	constructor(app: Application) {
 		this.app = app;
+
+		this.ctx = this.app.renderer.interactiveCtx;
+		this.drawingCtx = this.app.renderer.drawingCtx;
 
 		this.addEventListeners();
 	}
@@ -35,21 +30,43 @@ class InteractiveCanvas {
 		return this.ctx.canvas.offsetHeight;
 	}
 
-	public draw() {}
+	public draw() {
+		for (const element of this.app.renderer.selectedElements) {
+			const box = element.boundingBox;
+			const padding = 10;
 
-	public render(cb: () => void) {
+			this.ctx.strokeStyle = "blue";
+			this.ctx.lineWidth = 2;
+			this.ctx.beginPath();
+			this.ctx.rect(
+				box.x - padding,
+				box.y - padding,
+				box.w + 2 * padding,
+				box.h + 2 * padding
+			);
+			this.ctx.stroke();
+		}
+	}
+
+	public render() {
 		this.ctx.clearRect(0, 0, this.cWidth, this.cHeight);
 		this.ctx.save();
 		this.ctx.translate(this.app.viewport.center.x, this.app.viewport.center.y);
 		this.ctx.scale(1 / this.app.viewport.zoom, 1 / this.app.viewport.zoom);
 		this.ctx.translate(this.app.viewport.offset.x, this.app.viewport.offset.y);
 
-		cb();
+		this.draw();
 		this.ctx.restore();
 	}
 
 	public destroy() {
 		this.removeEventListeners();
+	}
+	public cancelAction() {
+		if (this.isErasing) this.app.renderer.cancelEraser();
+
+		this.endDrawing();
+		this.endErasing();
 	}
 
 	private startDrawing() {
@@ -65,12 +82,6 @@ class InteractiveCanvas {
 		this.isErasing = false;
 	}
 
-	private cancelAction() {
-		if (this.isErasing) this.app.renderer.cancelEraser();
-
-		this.endDrawing();
-		this.endErasing();
-	}
 	private setMouse(newPos: Vector) {
 		this.mouse.x = newPos.x;
 		this.mouse.y = newPos.y;
@@ -93,7 +104,7 @@ class InteractiveCanvas {
 
 			if (this.app.isCurrentTool("selector")) {
 				this.app.renderer.DeselectAll();
-				const element = this.app.renderer.getIntersectingElement(
+				const element = this.app.renderer.getIntersectingElementOnPoint(
 					this.getMouseLocation()
 				);
 				if (element) this.app.renderer.Select(element);

@@ -1,5 +1,4 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
-import BoundingBox from "./bounding-box";
 import CanvasElement from "./elements/element";
 import AppHistory, {
 	HistoryAction,
@@ -15,14 +14,14 @@ import CircleElement from "./elements/circle_element";
 import Viewport from "./viewport";
 
 class Renderer {
-	private drawingCtx: CanvasRenderingContext2D;
-	private interactiveCtx: CanvasRenderingContext2D;
+	public drawingCtx: CanvasRenderingContext2D;
+	public interactiveCtx: CanvasRenderingContext2D;
 	private roughCanvas: RoughCanvas;
 	private viewport: Viewport;
 	private _elements: CanvasElement[] = [];
 	private _history: AppHistory;
 	private _toDelete = new Set<CanvasElement>();
-	private _Selected = new Set<CanvasElement>();
+	public selectedElements = new Set<CanvasElement>();
 
 	constructor(
 		drawingCtx: CanvasRenderingContext2D,
@@ -42,6 +41,7 @@ class Renderer {
 	public get elements() {
 		return this._elements;
 	}
+
 	public Render() {
 		this.drawElements();
 	}
@@ -200,8 +200,10 @@ class Renderer {
 		this._toDelete.clear();
 	}
 	// Select
-	public getIntersectingElement(point: Vector) {
-		for (const element of this._elements) {
+	public getIntersectingElementOnPoint(point: Vector, all = false) {
+		const elements = all ? this._elements : this.getElementsInView();
+
+		for (const element of elements) {
 			if (element.checkIntersection(point, this.drawingCtx)) {
 				return element;
 			}
@@ -210,15 +212,15 @@ class Renderer {
 	}
 
 	public Select(element: CanvasElement) {
-		this._Selected.add(element);
+		this.selectedElements.add(element);
 	}
 
 	public Deselect(element: CanvasElement) {
-		this._Selected.delete(element);
+		this.selectedElements.delete(element);
 	}
 
 	public DeselectAll() {
-		this._Selected.clear();
+		this.selectedElements.clear();
 	}
 
 	private getNearestBoundingElements(point: Vector) {
@@ -336,25 +338,7 @@ class Renderer {
 			} else {
 				element.draw(this.drawingCtx, this.roughCanvas);
 			}
-
-			const box = element.boundingBox;
-			if (this._Selected.has(element)) this.__test_boundingBox(box);
 		}
-	}
-
-	private __test_boundingBox(box: BoundingBox) {
-		const padding = 10;
-
-		this.interactiveCtx.strokeStyle = "blue";
-		this.interactiveCtx.lineWidth = 2;
-		this.interactiveCtx.beginPath();
-		this.interactiveCtx.rect(
-			box.x - padding,
-			box.y - padding,
-			box.w + 2 * padding,
-			box.h + 2 * padding
-		);
-		this.interactiveCtx.stroke();
 	}
 }
 
