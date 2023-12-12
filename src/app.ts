@@ -179,7 +179,7 @@ class Application {
 			throw new Error("Canvas API is not supported in your browser");
 	}
 
-	private isCurrentTool(tool: Tool) {
+	public isCurrentTool(tool: Tool) {
 		return tool === this.currentTool;
 	}
 
