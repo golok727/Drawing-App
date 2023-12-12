@@ -46,17 +46,7 @@ export class CircleElement extends CanvasElement {
 				this.center.y,
 				this.width,
 				this.height,
-				{
-					bowing: 1.6,
-					fill: this.styles.fillColor,
-					fillWeight: 3,
-					stroke: this.styles.strokeColor,
-					strokeWidth: this.styles.strokeWidth,
-					seed: this.seed,
-					hachureAngle: 60, // angle of hachure,
-					hachureGap: this.styles.strokeWidth * 5,
-					roughness: 0.1,
-				}
+				this.getRoughStyles()
 			);
 		}
 	}

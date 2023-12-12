@@ -4,6 +4,7 @@ import Vector from "../vector";
 import BoundingBox from "../bounding-box";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { randomInteger } from "../random";
+import { Options as RoughOptions } from "roughjs/bin/core";
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -70,7 +71,27 @@ class CanvasElement {
 	setStyles(newStyles: Partial<CanvasStyles>) {
 		this.styles = { ...this.styles, ...newStyles };
 	}
-
+	getRoughStyles(): RoughOptions {
+		return {
+			roughness: 0.1,
+			fillWeight: 3,
+			bowing: 1.6,
+			fill: this.styles.fillColor,
+			stroke: this.styles.strokeColor,
+			strokeWidth: this.styles.strokeWidth,
+			hachureAngle: 60, // angle of hachure,
+			hachureGap: this.styles.strokeWidth * 4,
+			seed: this.seed,
+		};
+	}
+	applyStyles(ctx: CanvasRenderingContext2D, isStrokeElement: boolean = false) {
+		ctx.fillStyle = isStrokeElement
+			? this.styles.strokeColor
+			: this.styles.fillColor;
+		ctx.strokeStyle = this.styles.strokeColor;
+		ctx.lineWidth = this.styles.strokeWidth;
+		ctx.globalAlpha = this.styles.opacity;
+	}
 	// Common method to render elements
 	draw(ctx: CanvasRenderingContext2D, roughCanvas?: RoughCanvas): void {
 		console.warn(

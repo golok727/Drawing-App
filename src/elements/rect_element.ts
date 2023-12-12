@@ -82,14 +82,13 @@ class RectangleElement extends CanvasElement {
 		roughCanvas: RoughCanvas
 	): void {
 		if (roughCanvas) {
-			roughCanvas.rectangle(this.x, this.y, this.width, this.height, {
-				fill: this.styles.fillColor,
-				hachureAngle: 60, // angle of hachure,
-				hachureGap: this.styles.strokeWidth * 4,
-				stroke: this.styles.strokeColor,
-				strokeWidth: this.styles.strokeWidth,
-				seed: this.seed,
-			});
+			roughCanvas.rectangle(
+				this.x,
+				this.y,
+				this.width,
+				this.height,
+				this.getRoughStyles()
+			);
 		}
 	}
 }

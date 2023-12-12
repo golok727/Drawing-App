@@ -88,13 +88,13 @@ export class StrokeElement extends CanvasElement {
 	private freeDraw(ctx: CanvasRenderingContext2D) {
 		if (!this.isDone) this.generatePath();
 
-		ctx.save();
 		ctx.shadowBlur = 3;
 		ctx.shadowColor = this.styles.strokeColor;
-		ctx.fillStyle = this.styles.strokeColor;
-
+		this.applyStyles(ctx, true);
 		ctx.fill(this.computedPath);
-		ctx.restore();
+
+		ctx.shadowBlur = 0;
+		ctx.shadowColor = "";
 	}
 
 	private drawStroke(ctx: CanvasRenderingContext2D) {
