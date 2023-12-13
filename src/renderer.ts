@@ -114,14 +114,23 @@ class Renderer {
 	/**
 	 * Call Within the mouse move
 	 */
-	public DrawRect(drag: Drag, proportional = false) {
+	public DrawRect(mouse: Vector, drag: Drag, proportional = false) {
 		if (this._elements.length <= 0) return;
 		const rectangleElem = this.getLastElement();
 
 		if (rectangleElem && rectangleElem instanceof RectangleElement) {
 			const { x: dx, y: dy } = drag.offset;
-			rectangleElem.width = dx;
-			rectangleElem.height = proportional ? dx : dy;
+			if (dx < 0 || dy < 0) {
+				rectangleElem.x = mouse.x;
+				rectangleElem.y = mouse.y;
+				const w = Math.abs(dx);
+				const h = Math.abs(proportional ? dx : dy);
+				rectangleElem.width = w;
+				rectangleElem.height = h;
+			} else {
+				rectangleElem.width = dx;
+				rectangleElem.height = proportional ? dx : dy;
+			}
 		}
 	}
 

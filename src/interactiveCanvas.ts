@@ -161,6 +161,7 @@ class InteractiveCanvas extends DestroyableEvent {
 
 		if (this.app.isCurrentTool("rect") && this.drag.isDragging()) {
 			this.app.renderer.DrawRect(
+				this.getMouseLocation(),
 				this.drag,
 				this.app.keyboard.isPressed("", { shift: true })
 			);
