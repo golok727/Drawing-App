@@ -4,7 +4,7 @@ import Vector from "../vector";
 import BoundingBox from "../boundingBox";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { randomInteger } from "../random";
-import { Options as RoughOptions } from "roughjs/bin/core";
+import { Drawable, Options as RoughOptions } from "roughjs/bin/core";
 
 export const ElementTypes = {
 	Stroke: "stroke",
@@ -22,8 +22,9 @@ class CanvasElement {
 	public isStagedForDelete = false;
 	public isDone = false;
 
+	protected shape: Drawable | null = null;
 	protected seed: number;
-	protected styles: CanvasStyles = { ...DefaultCanvasStyles };
+	public styles: CanvasStyles = { ...DefaultCanvasStyles };
 
 	protected _boundingBox = new BoundingBox(0, 0, 0, 0);
 	constructor(type: ElementType) {
@@ -32,6 +33,12 @@ class CanvasElement {
 	}
 
 	public calculateBoundingBox(): void {}
+
+	public draw(drawingCtx: CanvasRenderingContext2D, roughCanvas?: RoughCanvas) {
+		if (!this.isDone) this.generateShape();
+
+		this.onDraw(drawingCtx, roughCanvas);
+	}
 
 	get boundingBox() {
 		return this._boundingBox;
@@ -95,7 +102,16 @@ class CanvasElement {
 		ctx.globalAlpha = this.styles.opacity;
 	}
 	// Common method to render elements
-	draw(ctx: CanvasRenderingContext2D, roughCanvas?: RoughCanvas): void {
+	/**
+	 *
+	 * @param ctx
+	 * @param roughCanvas
+	 * @description Function called on each draw
+	 */
+	protected onDraw(
+		ctx: CanvasRenderingContext2D,
+		roughCanvas?: RoughCanvas
+	): void {
 		console.warn(
 			`The Draw method for ElementType: ${this.type} should be implemented separately\n CTX:`,
 			ctx,
@@ -106,6 +122,11 @@ class CanvasElement {
 	checkIntersection(point: Vector, _ctx: CanvasRenderingContext2D): boolean {
 		return this._boundingBox.isIntersecting(point);
 	}
+
+	/**
+	 * Shapes or paths should be generated inside this function. This will only be called if the shape is completely created. `isDone = true`
+	 */
+	protected generateShape() {}
 
 	serialize() {}
 }

@@ -3,6 +3,8 @@ import BoundingBox from "../boundingBox";
 import { COLORS } from "../utils";
 import Vector from "../vector";
 import CanvasElement, { ElementTypes } from "./element";
+import { generator } from "../shape";
+import ShapeGenerator from "../ShapeGenerator";
 
 // Rectangles
 class RectangleElement extends CanvasElement {
@@ -77,19 +79,39 @@ class RectangleElement extends CanvasElement {
 			this.height
 		);
 	}
-	public override draw(
+
+	protected override generateShape() {
+		const w = this.width;
+		const h = this.height;
+		const r = Math.min(w, h) * 0.25;
+
+		const shape = ShapeGenerator.rectangle(
+			this.x,
+			this.y,
+			w,
+			h,
+			this.getRoughStyles(),
+			this
+		);
+
+		this.shape = shape;
+	}
+
+	protected override onDraw(
 		_drawingCtx: CanvasRenderingContext2D,
 		roughCanvas: RoughCanvas
 	): void {
-		if (roughCanvas) {
-			roughCanvas.rectangle(
-				this.x,
-				this.y,
-				this.width,
-				this.height,
-				this.getRoughStyles()
-			);
+		this.drawRect(_drawingCtx, roughCanvas);
+	}
+
+	private drawRect(
+		_drawingCtx: CanvasRenderingContext2D,
+		roughCanvas: RoughCanvas
+	) {
+		if (!this.isDone) {
+			this.generateShape();
 		}
+		if (this.shape) roughCanvas.draw(this.shape);
 	}
 }
 

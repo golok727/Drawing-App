@@ -11,6 +11,17 @@ export const COLORS = {
 	NONE: "",
 } as const;
 
+export const BG_COLORS = {
+	WHITE: "#999999",
+	RED: "#400000",
+	GREEN: "#003300",
+	BLUE: "#000066",
+	CYAN: "#004d4d",
+	YELLOW: "#666600",
+	ORANGE: "#803300",
+	NONE: "",
+} as const;
+
 export const filters = {
 	blur(amount: number, unit: "px" | "rem" = "px") {
 		return `blur(${amount}${unit})`;

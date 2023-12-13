@@ -79,7 +79,7 @@ export class StrokeElement extends CanvasElement {
 		}
 	}
 
-	private generatePath() {
+	protected override generateShape() {
 		const outlinePoints = getStroke(this._points, {
 			simulatePressure: true,
 			size: this.styles.strokeWidth,
@@ -93,8 +93,6 @@ export class StrokeElement extends CanvasElement {
 	}
 
 	private freeDraw(ctx: CanvasRenderingContext2D) {
-		if (!this.isDone) this.generatePath();
-
 		ctx.shadowBlur = 3;
 		ctx.shadowColor = this.styles.strokeColor;
 		this.applyStyles(ctx, true);
@@ -108,7 +106,7 @@ export class StrokeElement extends CanvasElement {
 		this.freeDraw(ctx);
 	}
 
-	override draw(ctx: CanvasRenderingContext2D): void {
+	protected override onDraw(ctx: CanvasRenderingContext2D): void {
 		this.drawStroke(ctx);
 	}
 }

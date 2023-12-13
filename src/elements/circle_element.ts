@@ -2,6 +2,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import BoundingBox from "../boundingBox";
 import Vector from "../vector";
 import CanvasElement, { ElementTypes } from "./element";
+import ShapeGenerator from "../ShapeGenerator";
 
 // Circle
 export class CircleElement extends CanvasElement {
@@ -35,19 +36,22 @@ export class CircleElement extends CanvasElement {
 	): boolean {
 		return this.boundingBox.isIntersecting(point);
 	}
+	protected override generateShape(): void {
+		this.shape = ShapeGenerator.ellipse(
+			this.center.x,
+			this.center.y,
+			this.width,
+			this.height,
+			this.getRoughStyles()
+		);
+	}
 
-	public override draw(
+	protected override onDraw(
 		_drawingContext: CanvasRenderingContext2D,
 		roughCanvas: RoughCanvas
 	): void {
 		if (roughCanvas) {
-			roughCanvas.ellipse(
-				this.center.x,
-				this.center.y,
-				this.width,
-				this.height,
-				this.getRoughStyles()
-			);
+			this.shape && roughCanvas.draw(this.shape);
 		}
 	}
 }

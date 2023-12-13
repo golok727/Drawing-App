@@ -1,5 +1,5 @@
 import Toolbar, { Tool } from "./toolbar";
-import { COLORS } from "./utils";
+import { BG_COLORS, COLORS } from "./utils";
 
 export type EventHandlers = {
 	[K in keyof HTMLElementEventMap]?: (event: HTMLElementEventMap[K]) => void;
@@ -83,7 +83,7 @@ class UI {
 		const containerId = type === "stroke" ? "strokeColor" : "fillColor";
 		const container = document.getElementById(containerId) as HTMLDivElement;
 
-		Object.entries(COLORS).forEach((color) => {
+		Object.entries(type === "stroke" ? COLORS : BG_COLORS).forEach((color) => {
 			const value = color[1];
 
 			const span = document.createElement("span");

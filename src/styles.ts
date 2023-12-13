@@ -6,6 +6,7 @@ export interface CanvasStyles {
 	strokeWidth: number;
 	opacity: number;
 	lineDash: number[];
+	roundness?: number;
 }
 
 const DefaultCanvasStyles: CanvasStyles = {
@@ -13,6 +14,7 @@ const DefaultCanvasStyles: CanvasStyles = {
 	strokeColor: COLORS.WHITE,
 	strokeWidth: 5,
 	opacity: 1,
+	roundness: 32,
 	lineDash: [],
 };
 
