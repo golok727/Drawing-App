@@ -98,10 +98,10 @@ class RectangleElement extends CanvasElement {
 	}
 
 	protected override onDraw(
-		_drawingCtx: CanvasRenderingContext2D,
+		drawingCtx: CanvasRenderingContext2D,
 		roughCanvas: RoughCanvas
 	): void {
-		this.drawRect(_drawingCtx, roughCanvas);
+		this.drawRect(drawingCtx, roughCanvas);
 	}
 
 	private drawRect(
@@ -111,6 +111,7 @@ class RectangleElement extends CanvasElement {
 		if (!this.isDone) {
 			this.generateShape();
 		}
+
 		if (this.shape) roughCanvas.draw(this.shape);
 	}
 }
