@@ -1,3 +1,4 @@
+import DestroyableEvent from "./destroyableEvent";
 import Application, { MOUSE_BUTTONS } from "./app";
 import Drag from "./drag";
 import CanvasElement from "./elements/element";
@@ -5,7 +6,7 @@ import Keyboard, { AppKeyboardEvent } from "./keyboard";
 import UI from "./ui";
 import Vector from "./vector";
 
-class Viewport {
+class Viewport extends DestroyableEvent {
 	private interactiveCanvas: HTMLCanvasElement;
 	private ui: UI;
 	private app: Application;
@@ -18,8 +19,6 @@ class Viewport {
 	private _zoom = 1;
 	private _offset: Vector;
 
-	private _eventListenerDestroyFn?: () => void;
-
 	private dragState = new Drag();
 	constructor(
 		interactiveCtx: CanvasRenderingContext2D,
@@ -28,6 +27,7 @@ class Viewport {
 		app: Application,
 		ui: UI
 	) {
+		super();
 		this.interactiveCanvas = interactiveCtx.canvas;
 		this.center = new Vector(
 			this.interactiveCanvas.width / 2,
@@ -41,14 +41,10 @@ class Viewport {
 		this.keyboard.on("keydown", this.onPanStart.bind(this));
 		this.keyboard.on("keyup", this.onPanEnd.bind(this));
 
-		this.addEventListeners();
+		this.listen();
 		if (!this.zoomDisplay) {
 			console.warn("Zoom value display container is empty");
 		}
-	}
-
-	public destroy() {
-		this.removeEventListeners();
 	}
 
 	public get zoom() {
@@ -163,7 +159,7 @@ class Viewport {
 		this.zoomCanvas(direction);
 	}
 
-	private addEventListeners() {
+	protected override addEventListeners() {
 		const { interactiveCanvas } = this;
 		const handleWheel = this.handleWheel.bind(this);
 		const handlePointerDown = this.handlePointerDown.bind(this);
@@ -176,15 +172,12 @@ class Viewport {
 		interactiveCanvas.addEventListener("pointerup", handlePointerUp);
 
 		// Destroy
-		this._eventListenerDestroyFn = () => {
+		return () => {
 			interactiveCanvas.removeEventListener("wheel", handleWheel);
 			interactiveCanvas.removeEventListener("pointerdown", handlePointerDown);
 			interactiveCanvas.removeEventListener("pointermove", handlePointerMove);
 			interactiveCanvas.removeEventListener("pointerup", handlePointerUp);
 		};
-	}
-	private removeEventListeners() {
-		this._eventListenerDestroyFn && this._eventListenerDestroyFn();
 	}
 }
 export default Viewport;

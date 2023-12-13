@@ -1,8 +1,9 @@
+import DestroyableEvent from "./destroyableEvent";
 import Application, { MOUSE_BUTTONS } from "./app";
 import Drag from "./drag";
 import Vector from "./vector";
 
-class InteractiveCanvas {
+class InteractiveCanvas extends DestroyableEvent {
 	ctx: CanvasRenderingContext2D;
 	drawingCtx: CanvasRenderingContext2D;
 	app: Application;
@@ -12,15 +13,15 @@ class InteractiveCanvas {
 	private isErasing = false;
 
 	private mouse = new Vector(0);
-	private _eventListenersDestroyFn?: () => void;
 
 	constructor(app: Application) {
+		super();
 		this.app = app;
 
 		this.ctx = this.app.renderer.interactiveCtx;
 		this.drawingCtx = this.app.renderer.drawingCtx;
 
-		this.addEventListeners();
+		this.listen();
 	}
 
 	get cWidth() {
@@ -59,9 +60,6 @@ class InteractiveCanvas {
 		this.ctx.restore();
 	}
 
-	public destroy() {
-		this.removeEventListeners();
-	}
 	public cancelAction() {
 		if (this.isErasing) this.app.renderer.cancelEraser();
 
@@ -207,8 +205,7 @@ class InteractiveCanvas {
 	}
 
 	// Register Events
-
-	private addEventListeners() {
+	protected override addEventListeners() {
 		const pointerDownHandler = this.handlePointerDown.bind(this);
 		const pointerUpHandler = this.handlePointerUp.bind(this);
 		const pointerMoveHandler = this.handlePointerMove.bind(this);
@@ -220,16 +217,12 @@ class InteractiveCanvas {
 		interactiveCanvas.addEventListener("pointermove", pointerMoveHandler);
 		document.addEventListener("pointerleave", pointerLeaveHandler);
 
-		this._eventListenersDestroyFn = () => {
+		return () => {
 			interactiveCanvas.removeEventListener("pointerdown", pointerDownHandler);
 			interactiveCanvas.removeEventListener("pointerup", pointerUpHandler);
 			interactiveCanvas.removeEventListener("pointermove", pointerMoveHandler);
 			document.removeEventListener("pointerleave", pointerLeaveHandler);
 		};
-	}
-
-	private removeEventListeners() {
-		this._eventListenersDestroyFn && this._eventListenersDestroyFn();
 	}
 }
 

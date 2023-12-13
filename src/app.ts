@@ -8,6 +8,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import rough from "roughjs";
 import InteractiveCanvas from "./interactiveCanvas";
 import StaticCanvas from "./staticCanvas";
+import DestroyableEvent from "./destroyableEvent";
 
 export const MOUSE_BUTTONS = {
 	LMB: 0,
@@ -17,7 +18,7 @@ export const MOUSE_BUTTONS = {
 
 export type Vec2 = [number, number];
 
-class Application {
+class Application extends DestroyableEvent {
 	private staticCanvasElement: HTMLCanvasElement =
 		document.createElement("canvas");
 	private interactiveCanvasElement: HTMLCanvasElement =
@@ -30,8 +31,6 @@ class Application {
 	private interactiveCtx!: CanvasRenderingContext2D;
 	private roughCanvas!: RoughCanvas;
 
-	private _eventListenersDestroyFn?: () => void | undefined;
-
 	renderer: Renderer;
 	ui = new UI();
 	history = new AppHistory();
@@ -41,6 +40,7 @@ class Application {
 	currentTool: Tool = "brush";
 
 	constructor(container: HTMLElement) {
+		super();
 		this.setupCanvas(container);
 
 		this.keyboard = new Keyboard(
@@ -63,13 +63,13 @@ class Application {
 			this.history
 		);
 
-		this.addEventListeners();
 		this.setupUI();
 		this.ui.makeToolBar(this.setTool.bind(this));
 
 		this.interactiveCanvas = new InteractiveCanvas(this);
-
 		this.staticCanvas = new StaticCanvas(this.renderer, this.viewport);
+
+		this.listen();
 	}
 	get cWidth() {
 		return this.staticCanvasElement.offsetWidth;
@@ -78,11 +78,13 @@ class Application {
 		return this.staticCanvasElement.offsetHeight;
 	}
 
-	public destroy() {
+	public dispose() {
 		this.viewport.destroy();
 		this.interactiveCanvas.destroy();
-		this.removeEventListeners();
 		this.keyboard.destroy();
+		this.ui.destroy();
+		this.destroy();
+		this.history.clear();
 	}
 
 	public render() {
@@ -284,24 +286,19 @@ class Application {
 			staticCanvasElement: staticCanvas,
 			interactiveCanvasElement: interactiveCanvas,
 		} = this;
-
+		console.log("resize");
 		staticCanvas.width = this.staticCanvasElement.offsetWidth;
 		staticCanvas.height = this.staticCanvasElement.offsetHeight;
 		interactiveCanvas.width = this.staticCanvasElement.offsetWidth;
 		interactiveCanvas.height = this.staticCanvasElement.offsetHeight;
 	}
 
-	// Register Events
-	private removeEventListeners() {
-		this._eventListenersDestroyFn && this._eventListenersDestroyFn();
-	}
-
-	private addEventListeners() {
+	protected override addEventListeners() {
 		const resizeHandler = this.handleResize.bind(this);
 
 		window.addEventListener("resize", resizeHandler);
 
-		this._eventListenersDestroyFn = () => {
+		return () => {
 			window.removeEventListener("resize", resizeHandler);
 		};
 	}
