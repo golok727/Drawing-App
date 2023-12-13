@@ -121,16 +121,22 @@ class Renderer {
 		if (rectangleElem && rectangleElem instanceof RectangleElement) {
 			const { x: dx, y: dy } = drag.offset;
 
-			const width = Math.abs(dx);
+			let width = Math.abs(dx);
 			let height = proportional ? Math.abs(dx) : Math.abs(dy);
 
 			if (dx < 0 && dy < 0) {
 				rectangleElem.x = mouse.x;
 				rectangleElem.y = mouse.y;
+				if (proportional) {
+					height = Math.abs(dy);
+				}
 			} else if (dx < 0) {
 				rectangleElem.x = mouse.x;
 			} else if (dy < 0) {
 				rectangleElem.y = mouse.y;
+				if (proportional) {
+					height = Math.abs(dy);
+				}
 			}
 
 			rectangleElem.width = width;
