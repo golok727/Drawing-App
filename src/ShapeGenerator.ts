@@ -1,7 +1,5 @@
 import { Options as RoughStyles } from "roughjs/bin/core";
 import { generator } from "./shape";
-import { getCornerRadius } from "./math";
-import CanvasElement from "./elements/element";
 
 class ShapeGenerator {
 	public static rectangle(
@@ -10,14 +8,13 @@ class ShapeGenerator {
 		w: number,
 		h: number,
 		roughStyles: RoughStyles,
-		element: CanvasElement
+		r: number
 	) {
 		x = parseFloat(x.toFixed(2));
 		y = parseFloat(y.toFixed(2));
-		if (!element.styles.roundness) {
+		if (!r) {
 			return generator.rectangle(x, y, w, h, roughStyles);
 		} else {
-			let r = getCornerRadius(Math.min(w, h), element);
 			const p = new PathGen();
 			p.moveTo(x + r, y);
 			p.lineTo(x + w - r, y);

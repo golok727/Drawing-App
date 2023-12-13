@@ -3,8 +3,8 @@ import BoundingBox from "../boundingBox";
 import { COLORS } from "../utils";
 import Vector from "../vector";
 import CanvasElement, { ElementTypes } from "./element";
-import { generator } from "../shape";
 import ShapeGenerator from "../ShapeGenerator";
+import { getCornerRadius } from "../math";
 
 // Rectangles
 class RectangleElement extends CanvasElement {
@@ -83,7 +83,7 @@ class RectangleElement extends CanvasElement {
 	protected override generateShape() {
 		const w = this.width;
 		const h = this.height;
-		const r = Math.min(w, h) * 0.25;
+		const r = getCornerRadius(Math.min(w, h), this);
 
 		const shape = ShapeGenerator.rectangle(
 			this.x,
@@ -91,7 +91,7 @@ class RectangleElement extends CanvasElement {
 			w,
 			h,
 			this.getRoughStyles(),
-			this
+			r
 		);
 
 		this.shape = shape;

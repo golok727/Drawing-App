@@ -14,7 +14,7 @@ const DefaultCanvasStyles: CanvasStyles = {
 	strokeColor: COLORS.WHITE,
 	strokeWidth: 5,
 	opacity: 1,
-	roundness: 32,
+	roundness: 20,
 	lineDash: [],
 };
 
