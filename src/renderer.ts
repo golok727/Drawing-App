@@ -164,8 +164,8 @@ class Renderer {
 
 		if (circleElem && circleElem instanceof CircleElement) {
 			const { x: dx, y: dy } = drag.offset;
-			circleElem.width = dx;
-			circleElem.height = proportional ? dx : dy;
+			circleElem.width = Math.abs(dx);
+			circleElem.height = Math.abs(proportional ? dx : dy);
 		}
 	}
 
