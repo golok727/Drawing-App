@@ -24,6 +24,9 @@ class BoundingBox {
 	public get br() {
 		return new Vector(this.x + this.w, this.y + this.h);
 	}
+	public get mid() {
+		return new Vector(this.x + this.w / 2, this.y + this.h / 2);
+	}
 
 	public get top() {
 		return this.y;

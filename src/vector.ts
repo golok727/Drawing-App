@@ -34,6 +34,10 @@ class Vector {
 		return Math.hypot(p1.x - p2.x, p1.y - p2.y);
 	}
 
+	isZero() {
+		return this.x === 0 && this.y === 0 && this.z === 0;
+	}
+
 	clone() {
 		return Vector.from(this);
 	}

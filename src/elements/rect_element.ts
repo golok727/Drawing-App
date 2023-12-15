@@ -73,10 +73,10 @@ class RectangleElement extends CanvasElement {
 
 	public override calculateBoundingBox(): void {
 		this._boundingBox = new BoundingBox(
-			this.x,
-			this.y,
-			this.width,
-			this.height
+			this.x - this.styles.strokeWidth,
+			this.y - this.styles.strokeWidth,
+			this.width + this.styles.strokeWidth * 2,
+			this.height + this.styles.strokeWidth * 2
 		);
 	}
 

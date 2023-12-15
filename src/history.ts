@@ -17,13 +17,16 @@ export namespace HistoryActions {
 
 	export interface Erase {
 		type: "erase";
+		elements: CanvasElement[];
+	}
 
+	export interface Delete {
+		type: "delete";
 		elements: CanvasElement[];
 	}
 
 	export interface ToolChange {
 		type: "tool_change";
-
 		tool: Tool;
 	}
 }
@@ -32,6 +35,7 @@ export type HistoryAction =
 	| HistoryActions.AddElement
 	| HistoryActions.ClearAll
 	| HistoryActions.Erase
+	| HistoryActions.Delete
 	| HistoryActions.ToolChange;
 
 class AppHistory {

@@ -13,14 +13,23 @@ import Drag from "./drag";
 import RectangleElement from "./elements/rect_element";
 import CircleElement from "./elements/circle_element";
 import Viewport from "./viewport";
+import BoundingBox from "./boundingBox";
+
+const rectangle = new RectangleElement(500, 400, 200, 300);
+rectangle.setStyles({
+	fillColor: "",
+	strokeColor: "red",
+	roundness: 2,
+});
+rectangle.calculateBoundingBox();
 
 class Renderer {
 	public drawingCtx: CanvasRenderingContext2D;
 	public interactiveCtx: CanvasRenderingContext2D;
 	private roughCanvas: RoughCanvas;
 	private viewport: Viewport;
-	private _elements: CanvasElement[] = [];
-	private _history: AppHistory;
+	private _elements: CanvasElement[] = [rectangle];
+	private history: AppHistory;
 	private _toDelete = new Set<CanvasElement>();
 	public selectedElements = new Set<CanvasElement>();
 
@@ -32,12 +41,12 @@ class Renderer {
 		history: AppHistory
 	) {
 		this.drawingCtx = drawingCtx;
-		this._history = history;
 		this.interactiveCtx = interactiveCtx;
+		this.history = history;
 		this.roughCanvas = roughCanvas;
 		this.viewport = viewport;
-		this._history.onOldestRemove = this.historyOnRemoveOldestChange.bind(this);
-		this._history.onRedoClear = this.historyOnRedoClear.bind(this);
+		this.history.onOldestRemove = this.historyOnRemoveOldestChange.bind(this);
+		this.history.onRedoClear = this.historyOnRedoClear.bind(this);
 	}
 	public get elements() {
 		return this._elements;
@@ -57,7 +66,7 @@ class Renderer {
 
 	public clear() {
 		// Add the clear to history
-		this._history.add({ type: "clear_all", elements: [...this.elements] });
+		this.history.add({ type: "clear_all", elements: [...this.elements] });
 		this._elements.splice(0, this._elements.length);
 	}
 
@@ -87,7 +96,7 @@ class Renderer {
 			strokeElem.setDone(true);
 			strokeElem.calculateBoundingBox();
 			// Add stroke to the history
-			this._history.addCanvasElement(strokeElem);
+			this.history.addCanvasElement(strokeElem);
 		}
 	}
 	// Rectangle
@@ -170,7 +179,7 @@ class Renderer {
 		if (rectangleElem && rectangleElem instanceof RectangleElement) {
 			rectangleElem.setDone(true);
 
-			this._history.addCanvasElement(rectangleElem);
+			this.history.addCanvasElement(rectangleElem);
 		}
 	}
 	// Circle
@@ -200,7 +209,7 @@ class Renderer {
 
 		if (circleElem && circleElem instanceof CircleElement) {
 			circleElem.setDone(true);
-			this._history.addCanvasElement(circleElem);
+			this.history.addCanvasElement(circleElem);
 		}
 	}
 
@@ -232,7 +241,7 @@ class Renderer {
 
 		// History
 		if (this._toDelete.size)
-			this._history.add({ type: "erase", elements: [...this._toDelete] });
+			this.history.add({ type: "erase", elements: [...this._toDelete] });
 
 		this._toDelete.clear();
 	}
@@ -252,11 +261,30 @@ class Renderer {
 		this.selectedElements.add(element);
 	}
 
+	public SelectInsideBoundingBox(boundingBox: BoundingBox) {
+		const nonDeletedElementsInViewport = this.getElementsInView();
+
+		for (const element of nonDeletedElementsInViewport) {
+			if (boundingBox.isInside(element.boundingBox))
+				this.selectedElements.add(element);
+		}
+	}
+
 	public Deselect(element: CanvasElement) {
 		this.selectedElements.delete(element);
 	}
 
 	public DeselectAll() {
+		this.selectedElements.clear();
+	}
+
+	public DeleteSelected() {
+		for (const selected of this.selectedElements) {
+			selected.delete();
+		}
+
+		this.history.add({ type: "delete", elements: [...this.selectedElements] });
+
 		this.selectedElements.clear();
 	}
 
@@ -319,8 +347,12 @@ class Renderer {
 		}
 	}
 
-	private eraseAction(type: UndoOrRedo, action: HistoryActions.Erase) {
-		// Action handler for eraser
+	private deleteAction(
+		type: UndoOrRedo,
+		action: HistoryActions.Erase | HistoryActions.Delete
+	) {
+		// Action handler for eraser | delete
+
 		switch (type) {
 			case "undo": {
 				for (const element of action.elements) element.recover();
@@ -354,8 +386,10 @@ class Renderer {
 				return;
 
 			case "erase":
-				this.eraseAction(type, action);
+			case "delete": {
+				this.deleteAction(type, action);
 				return;
+			}
 
 			case "clear_all":
 				this.clearAllAction(type, action);

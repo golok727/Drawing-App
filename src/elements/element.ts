@@ -56,8 +56,6 @@ class CanvasElement {
 	}
 
 	delete() {
-		// this.revertToPreviousStyles();
-		// this.previousStyles = this.styles;
 		this._isDeleted = true;
 	}
 	recover() {

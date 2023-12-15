@@ -20,17 +20,16 @@ class StaticCanvas {
 		const { drawingCtx } = this.renderer;
 
 		drawingCtx.fillStyle = "black";
+		drawingCtx.save();
 		drawingCtx.clearRect(0, 0, this.cWidth, this.cHeight);
 
 		drawingCtx.fillRect(0, 0, this.cWidth, this.cHeight);
 
-		drawingCtx.save();
 		drawingCtx.translate(this.viewport.center.x, this.viewport.center.y);
 		drawingCtx.scale(1 / this.viewport.zoom, 1 / this.viewport.zoom);
 		drawingCtx.translate(this.viewport.offset.x, this.viewport.offset.y);
 
 		this.renderer.Render();
-
 		drawingCtx.restore();
 	}
 }

@@ -188,7 +188,7 @@ class Application extends DestroyableEvent {
 
 	// History handle
 	private historyHandler(type: UndoOrRedo, action: HistoryAction) {
-		let rendererUndoRedoHandler =
+		let rendererHistoryHandler =
 			type === "undo"
 				? this.renderer.applyUndo.bind(this.renderer)
 				: this.renderer.applyRedo.bind(this.renderer);
@@ -196,8 +196,9 @@ class Application extends DestroyableEvent {
 		switch (action.type) {
 			case "add_element":
 			case "erase":
+			case "delete":
 			case "clear_all": {
-				rendererUndoRedoHandler(action);
+				rendererHistoryHandler(action);
 				break;
 			}
 		}
@@ -275,6 +276,10 @@ class Application extends DestroyableEvent {
 
 		if (isPressed("i")) {
 			this.changeTool("texture");
+		}
+
+		if (isPressed("delete")) {
+			this.renderer.DeleteSelected();
 		}
 	}
 
