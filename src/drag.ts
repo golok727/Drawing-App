@@ -5,16 +5,31 @@ class Drag {
 	private end = new Vector(0);
 	public offset = new Vector(0);
 	private active = false;
+	private paused = false;
 
 	constructor() {}
 
+	public get state() {
+		return {
+			start: this.start,
+			end: this.end,
+			offset: this.offset,
+			active: this.active,
+		};
+	}
 	public dragStart(start: Vector) {
 		this.start = start;
 		this.active = true;
 	}
+	public pause() {
+		this.paused = true;
+	}
+	public unpause() {
+		this.paused = false;
+	}
 
 	public dragTo(end: Vector) {
-		if (this.active) {
+		if (this.active && !this.paused) {
 			this.end = end;
 			this.offset = this.end.subtract(this.start);
 		}

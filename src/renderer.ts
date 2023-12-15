@@ -1,3 +1,4 @@
+import { isPressedFn } from "./keyboard";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import CanvasElement from "./elements/element";
 import AppHistory, {
@@ -114,28 +115,45 @@ class Renderer {
 	/**
 	 * Call Within the mouse move
 	 */
-	public DrawRect(mouse: Vector, drag: Drag, proportional = false) {
+	public DrawRect(
+		mouse: Vector,
+		drag: Drag,
+		proportional = false,
+		isPressed: isPressedFn
+	) {
 		if (this._elements.length <= 0) return;
 		const rectangleElem = this.getLastElement();
 
 		if (rectangleElem && rectangleElem instanceof RectangleElement) {
 			const { x: dx, y: dy } = drag.offset;
 
+			if (isPressed("space")) {
+				drag.pause();
+				rectangleElem.x = mouse.x - rectangleElem.width;
+				rectangleElem.y = mouse.y - rectangleElem.height;
+				return;
+			}
+
 			let width = Math.abs(dx);
 			let height = proportional ? Math.abs(dx) : Math.abs(dy);
 
 			if (dx < 0 && dy < 0) {
+				// Upper-left quadrant
 				rectangleElem.x = mouse.x;
 				rectangleElem.y = mouse.y;
 				if (proportional) {
-					height = Math.abs(dy);
+					height = Math.abs(dx);
+					const x = drag.state.start.x - height;
+					const y = drag.state.start.y - height;
+					rectangleElem.x = x;
+					rectangleElem.y = y;
 				}
 			} else if (dx < 0) {
 				rectangleElem.x = mouse.x;
 			} else if (dy < 0) {
 				rectangleElem.y = mouse.y;
 				if (proportional) {
-					height = Math.abs(dy);
+					height = Math.abs(dx);
 				}
 			}
 

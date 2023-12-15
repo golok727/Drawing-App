@@ -12,6 +12,7 @@ export type isPressedFn = (
 export type AppKeyboardEvent = {
 	native: KeyboardEvent;
 	isPressed: isPressedFn;
+	isReleased: (key: Keys | string) => boolean;
 	key: Keys | string;
 };
 
@@ -88,6 +89,13 @@ class Keyboard extends DestroyableEvent {
 		this.keys[key] = isKeyDown;
 		return key;
 	}
+
+	private isReleased(evt: KeyboardEvent) {
+		return (key: Keys | string) => {
+			return this.getKey(evt) === key;
+		};
+	}
+
 	private makeEvent(
 		native: KeyboardEvent,
 		custom: { key: string }
@@ -96,6 +104,7 @@ class Keyboard extends DestroyableEvent {
 			native,
 			...custom,
 			isPressed: this.isPressed.bind(this),
+			isReleased: this.isReleased.bind(this)(native),
 		};
 		return event;
 	}

@@ -144,7 +144,8 @@ class InteractiveCanvas extends DestroyableEvent {
 	private handlePointerMove(evt: MouseEvent) {
 		this.setMouse(this.app.viewport.getMouse(evt));
 
-		if (this.app.keyboard.isPressed("space")) return;
+		if (this.app.keyboard.isPressed("space") && !this.app.isCurrentTool("rect"))
+			return;
 
 		// Dragger
 		this.drag.dragTo(this.mouse.clone());
@@ -163,7 +164,8 @@ class InteractiveCanvas extends DestroyableEvent {
 			this.app.renderer.DrawRect(
 				this.getMouseLocation(),
 				this.drag,
-				this.app.keyboard.isPressed("", { shift: true })
+				this.app.keyboard.isPressed("", { shift: true }),
+				this.app.keyboard.isPressed.bind(this.app.keyboard)
 			);
 		}
 

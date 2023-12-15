@@ -279,7 +279,11 @@ class Application extends DestroyableEvent {
 	}
 
 	// Keyboard class Handlers
-	private handleKeyUp(_evt: AppKeyboardEvent) {}
+	private handleKeyUp(evt: AppKeyboardEvent) {
+		if (evt.isReleased("space")) {
+			this.interactiveCanvas.drag.unpause();
+		}
+	}
 
 	private handleResize(_evt: UIEvent) {
 		const {
