@@ -80,8 +80,11 @@ class Viewport extends DestroyableEvent {
 	public getMouse(evt: MouseEvent) {
 		return this.getPointOnViewport(new Vector(evt.offsetX, evt.offsetY));
 	}
-	public getPointOnViewport(point: Vector) {
-		return point.subtract(this.center).scale(this._zoom).subtract(this._offset);
+	public getPointOnViewport(point: Vector, liveOffset = false) {
+		return point
+			.subtract(this.center)
+			.scale(this._zoom)
+			.subtract(liveOffset ? this.offset : this._offset);
 	}
 	public isInViewport(element: CanvasElement): boolean {
 		// Check if the element's bounding box is inside the viewport's bounds
@@ -103,9 +106,10 @@ class Viewport extends DestroyableEvent {
 	}
 
 	private getInnerViewBoundsInSceneCords() {
-		const topLeft = this.getPointOnViewport(new Vector(0, 0));
+		const topLeft = this.getPointOnViewport(new Vector(0, 0), true);
 		const bottomRight = this.getPointOnViewport(
-			new Vector(this.interactiveCanvas.width, this.interactiveCanvas.height)
+			new Vector(this.interactiveCanvas.width, this.interactiveCanvas.height),
+			true
 		);
 
 		return { topLeft, bottomRight };

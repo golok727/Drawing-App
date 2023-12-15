@@ -218,7 +218,6 @@ class Renderer {
 
 		this._toDelete.clear();
 	}
-	// Select
 	public getIntersectingElementOnPoint(point: Vector, all = false) {
 		const elements = all ? this._elements : this.getElementsInView();
 
@@ -230,6 +229,7 @@ class Renderer {
 		return null;
 	}
 
+	// Select
 	public Select(element: CanvasElement) {
 		this.selectedElements.add(element);
 	}
@@ -249,10 +249,12 @@ class Renderer {
 	}
 
 	private getElementsInView() {
+		// TODO Cache this
 		return this._elements.filter(
 			(elem) => this.viewport.isInViewport(elem) && !elem.isDeleted
 		);
 	}
+
 	private getLastElement() {
 		return this._elements[this._elements.length - 1];
 	}
