@@ -53,16 +53,12 @@ export class StrokeElement extends CanvasElement {
 		);
 		if (isPointOnPath) return true;
 		else {
-			const area = this.boundingBox.w * this.boundingBox.h;
-
-			if (area <= 10) {
-				const boxCenter = new Vector(
-					this.boundingBox.x + this.boundingBox.w / 2,
-					this.boundingBox.y + this.boundingBox.h / 2
-				);
-				const distance = Vector.distance(point, boxCenter);
-				return distance <= 10;
-			} else return false;
+			const boxCenter = new Vector(
+				this.boundingBox.x + this.boundingBox.w / 2,
+				this.boundingBox.y + this.boundingBox.h / 2
+			);
+			const distance = Vector.distance(point, boxCenter);
+			return distance <= 20;
 		}
 	}
 
