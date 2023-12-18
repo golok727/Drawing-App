@@ -170,7 +170,7 @@ class Viewport extends DestroyableEvent {
 		const handlePointerMove = this.handlePointerMove.bind(this);
 		const handlePointerUp = this.handlePointerUp.bind(this);
 
-		interactiveCanvas.addEventListener("wheel", handleWheel);
+		interactiveCanvas.addEventListener("wheel", handleWheel, { passive: true });
 		interactiveCanvas.addEventListener("pointerdown", handlePointerDown);
 		interactiveCanvas.addEventListener("pointermove", handlePointerMove);
 		interactiveCanvas.addEventListener("pointerup", handlePointerUp);
