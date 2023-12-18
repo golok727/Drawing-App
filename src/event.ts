@@ -37,7 +37,7 @@ class EventHandlerX {
 		if (!this.registeredElements.has(target)) {
 			this.registeredElements.set(target, new Map());
 		}
-		const elementEvents = this.registeredElements.get(target)!;
+		const targetEvents = this.registeredElements.get(target)!;
 
 		const event = new EventHandle<E, T>(type, handler, options);
 
@@ -47,14 +47,21 @@ class EventHandlerX {
 			event.options
 		);
 
-		const handlers = elementEvents.get(type as any);
+		const handlers = targetEvents.get(type as any);
 		if (handlers) {
 			handlers.add(event);
 		} else {
 			const newSet = new Set<EventHandle<EventTarget, any>>();
 			newSet.add(event);
-			elementEvents.set(type as any, newSet);
+			targetEvents.set(type as any, newSet);
 		}
+	}
+
+	public static remove(
+		element: EventTarget,
+		...types: (keyof HTMLElementEventMap)[]
+	) {
+		this._remove(element, types);
 	}
 
 	private static removeEventListener<
@@ -118,13 +125,6 @@ class EventHandlerX {
 		} else {
 			this.removeAllForTargetByType(element, types);
 		}
-	}
-
-	public static remove(
-		element: EventTarget,
-		...types: (keyof HTMLElementEventMap)[]
-	) {
-		this._remove(element, types);
 	}
 
 	public static destroy() {
