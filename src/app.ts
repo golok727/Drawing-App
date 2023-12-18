@@ -295,7 +295,6 @@ class Application extends DestroyableEvent {
 			staticCanvasElement: staticCanvas,
 			interactiveCanvasElement: interactiveCanvas,
 		} = this;
-		console.log("resize");
 		staticCanvas.width = this.staticCanvasElement.offsetWidth;
 		staticCanvas.height = this.staticCanvasElement.offsetHeight;
 		interactiveCanvas.width = this.staticCanvasElement.offsetWidth;

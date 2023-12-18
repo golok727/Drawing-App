@@ -1,11 +1,19 @@
-class EventHandle<T extends keyof HTMLElementEventMap> {
-	type: keyof HTMLElementEventMap;
-	handler: (evt: HTMLElementEventMap[T]) => any;
+type EventMapForTarget<T extends EventTarget> = T extends Window
+	? WindowEventMap
+	: T extends Document
+	? DocumentEventMap
+	: T extends Element
+	? HTMLElementEventMap
+	: any;
+
+class EventHandle<E extends EventTarget, T extends keyof EventMapForTarget<E>> {
+	type: T;
+	handler: (evt: EventMapForTarget<E>[T]) => any;
 	options?: boolean | AddEventListenerOptions;
 
 	constructor(
 		type: T,
-		handler: (evt: HTMLElementEventMap[T]) => any,
+		handler: (evt: EventMapForTarget<E>[T]) => any,
 		options?: boolean | AddEventListenerOptions
 	) {
 		this.type = type;
@@ -16,57 +24,120 @@ class EventHandle<T extends keyof HTMLElementEventMap> {
 
 class EventHandlerX {
 	static registeredElements: Map<
-		Element,
-		Map<keyof HTMLElementEventMap, EventHandle<any>>
+		EventTarget,
+		Map<string, Set<EventHandle<any, any>>>
 	> = new Map();
 
-	public static on<E extends Element, T extends keyof HTMLElementEventMap>(
-		element: E,
+	public static on<E extends EventTarget, T extends keyof EventMapForTarget<E>>(
+		target: E,
 		type: T,
-		handler: (evt: HTMLElementEventMap[T]) => any,
+		handler: (evt: EventMapForTarget<E>[T]) => any,
 		options?: boolean | AddEventListenerOptions
 	) {
-		if (!this.registeredElements.has(element)) {
-			this.registeredElements.set(element, new Map());
+		if (!this.registeredElements.has(target)) {
+			this.registeredElements.set(target, new Map());
 		}
-		const elementEvents = this.registeredElements.get(element)!;
+		const elementEvents = this.registeredElements.get(target)!;
 
-		const event = new EventHandle(type, handler, options);
+		const event = new EventHandle<E, T>(type, handler, options);
 
-		element.addEventListener(
+		target.addEventListener(
 			event.type as any,
 			event.handler as any,
 			event.options
 		);
 
-		elementEvents.set(type, new EventHandle(type, handler, options));
+		const handlers = elementEvents.get(type as any);
+		if (handlers) {
+			handlers.add(event);
+		} else {
+			const newSet = new Set<EventHandle<EventTarget, any>>();
+			newSet.add(event);
+			elementEvents.set(type as any, newSet);
+		}
 	}
 
-	private static removeEventListener<K extends keyof ElementEventMap>(
-		element: Element,
-		map: EventHandle<K>
+	private static removeEventListener<
+		E extends EventTarget,
+		K extends keyof EventMapForTarget<E>
+	>(element: E, map: EventHandle<E, K>) {
+		element.removeEventListener(
+			map.type as string,
+			map.handler as any,
+			map.options
+		);
+	}
+
+	private static getAllEventsForTarget(target: EventTarget) {
+		return this.registeredElements.get(target);
+	}
+
+	private static removeAllEventsForTarget(element: EventTarget) {
+		const eventsRegisteredForElement = this.getAllEventsForTarget(element);
+		if (!eventsRegisteredForElement) return;
+
+		for (const [_, eventHandler] of eventsRegisteredForElement) {
+			// Loop through the set of handlers
+			eventHandler.forEach((handler) => {
+				this.removeEventListener(element, handler);
+			});
+			// clear the handler set
+			eventHandler.clear();
+		}
+
+		this.registeredElements.delete(element);
+	}
+
+	private static removeAllForTargetByType(
+		target: EventTarget,
+		types: (keyof HTMLElementEventMap)[]
 	) {
-		element.removeEventListener(map.type, map.handler, map.options);
+		types.forEach((type) => {
+			const eventsRegisteredForElement = this.getAllEventsForTarget(target);
+			if (!eventsRegisteredForElement) return;
+
+			const eventHandlers = eventsRegisteredForElement.get(type as any);
+			if (!eventHandlers) return;
+
+			eventHandlers.forEach((handler) => {
+				this.removeEventListener(target, handler);
+			});
+
+			eventHandlers.clear();
+
+			eventsRegisteredForElement.delete(type as any);
+		});
 	}
 
-	public static remove(element: Element, type: keyof HTMLElementEventMap) {
-		const eventsRegisteredForElement = this.registeredElements.get(element);
-		if (eventsRegisteredForElement === undefined) return false;
+	private static _remove(
+		element: EventTarget,
+		types: (keyof HTMLElementEventMap)[]
+	) {
+		if (!types.length) {
+			this.removeAllEventsForTarget(element);
+		} else {
+			this.removeAllForTargetByType(element, types);
+		}
+	}
 
-		const event = eventsRegisteredForElement.get(type);
-		if (!event) return false;
-
-		this.removeEventListener(element, event);
-
-		eventsRegisteredForElement.delete(type);
+	public static remove(
+		element: EventTarget,
+		...types: (keyof HTMLElementEventMap)[]
+	) {
+		this._remove(element, types);
 	}
 
 	public static destroy() {
-		for (const [element, eventHandlers] of this.registeredElements) {
-			for (const [_, eventHandler] of eventHandlers) {
-				this.removeEventListener(element, eventHandler);
+		for (const [element, eventHandlerForElement] of this.registeredElements) {
+			for (const [_, handlers] of eventHandlerForElement) {
+				// Loop through the set of handlers
+				handlers.forEach((handler) => {
+					this.removeEventListener(element, handler);
+				});
+				handlers.clear();
 			}
 		}
+		this.registeredElements = new Map();
 	}
 }
 export default EventHandlerX;
