@@ -40,12 +40,16 @@ export type HistoryAction =
 
 class AppHistory {
 	private maxHistory;
-	private history: HistoryAction[] = [];
-	private redoStack: HistoryAction[] = [];
-	onOldestRemove: (oldestAction: HistoryAction) => void = () => {};
-	onRedoClear: (redoActions: HistoryAction[]) => void = () => {};
+	private history: HistoryAction[];
+	private redoStack: HistoryAction[];
+	onOldestRemove: (oldestAction: HistoryAction) => void;
+	onRedoClear: (redoActions: HistoryAction[]) => void;
 
 	constructor(max: number = 50) {
+		this.history = [];
+		this.redoStack = [];
+		this.onOldestRemove = () => {};
+		this.onRedoClear = () => {};
 		this.maxHistory = max;
 	}
 

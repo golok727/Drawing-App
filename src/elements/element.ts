@@ -16,11 +16,11 @@ export const ElementTypes = {
 type ElementType = (typeof ElementTypes)[keyof typeof ElementTypes];
 
 class CanvasElement {
-	protected _id: string = nanoid();
+	protected _id: string;
 	public type: ElementType;
-	public _isDeleted = false; // for easy history purposes
-	public isStagedForDelete = false;
-	public isDone = false;
+	public _isDeleted: boolean = false; // for easy history purposes
+	public isStagedForDelete: boolean = false;
+	public isDone: boolean = false;
 
 	protected shape: Drawable | null = null;
 	protected seed: number;
@@ -28,6 +28,10 @@ class CanvasElement {
 
 	protected _boundingBox = new BoundingBox(0, 0, 0, 0);
 	constructor(type: ElementType) {
+		this._id = nanoid();
+		this._isDeleted = false;
+		this.isStagedForDelete = false;
+		this.isDone = false;
 		this.type = type;
 		this.seed = randomInteger();
 	}

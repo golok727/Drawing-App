@@ -7,15 +7,14 @@ export type EventHandlers = {
 type Component = { element: Element; handlers: EventHandlers };
 
 class UI {
-	private components: { element: Element; handlers: EventHandlers }[] = [];
-	private isRegistered = false;
-	private currentStrokeColorSpan: HTMLSpanElement | null = null;
-	private currentFillColorSpan: HTMLSpanElement | null = null;
-	public toolbar: Toolbar | null = null;
+	private components: { element: Element; handlers: EventHandlers }[];
+	private isRegistered: boolean;
+	private currentStrokeColorSpan: HTMLSpanElement | null;
+	private currentFillColorSpan: HTMLSpanElement | null;
+	public toolbar: Toolbar | null;
 
-	private appContainer = document.getElementById(
-		"app-container"
-	) as HTMLDivElement;
+	private appContainer: HTMLDivElement;
+
 	public readonly drawingState = {
 		strokeColor: COLORS.WHITE as string,
 		fillColor: COLORS.NONE as string,
@@ -23,6 +22,15 @@ class UI {
 	};
 
 	constructor() {
+		this.components = [];
+		this.isRegistered = false;
+		this.currentStrokeColorSpan = null;
+		this.currentFillColorSpan = null;
+		this.toolbar = null;
+		this.appContainer = document.getElementById(
+			"app-container"
+		) as HTMLDivElement;
+
 		this.penSizeRangeSetup();
 		this.makeColorPicker("stroke");
 		this.makeColorPicker("fill");

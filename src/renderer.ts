@@ -28,10 +28,10 @@ class Renderer {
 	public interactiveCtx: CanvasRenderingContext2D;
 	private roughCanvas: RoughCanvas;
 	private viewport: Viewport;
-	private _elements: CanvasElement[] = [rectangle];
+	private _elements: CanvasElement[];
 	private history: AppHistory;
-	private _toDelete = new Set<CanvasElement>();
-	public selectedElements = new Set<CanvasElement>();
+	private elementsToDelete: Set<CanvasElement>;
+	public selectedElements: Set<CanvasElement>;
 
 	constructor(
 		drawingCtx: CanvasRenderingContext2D,
@@ -42,6 +42,11 @@ class Renderer {
 	) {
 		this.drawingCtx = drawingCtx;
 		this.interactiveCtx = interactiveCtx;
+
+		this._elements = [rectangle];
+		this.elementsToDelete = new Set();
+		this.selectedElements = new Set();
+
 		this.history = history;
 		this.roughCanvas = roughCanvas;
 		this.viewport = viewport;
@@ -214,10 +219,10 @@ class Renderer {
 	}
 
 	public cancelEraser() {
-		for (const elem of this._toDelete) {
+		for (const elem of this.elementsToDelete) {
 			elem.unStageFromDelete();
 		}
-		this._toDelete.clear();
+		this.elementsToDelete.clear();
 	}
 
 	// Erase
@@ -225,25 +230,25 @@ class Renderer {
 		const elementsNearCurrentPoint = this.getNearestBoundingElements(point);
 
 		for (const element of elementsNearCurrentPoint) {
-			if (this._toDelete.has(element)) continue;
+			if (this.elementsToDelete.has(element)) continue;
 
 			if (element.checkIntersection(point, this.drawingCtx)) {
 				element.stageForDelete();
-				this._toDelete.add(element);
+				this.elementsToDelete.add(element);
 			}
 		}
 	}
 
 	public onEraseEnd() {
-		for (const element of this._toDelete) {
+		for (const element of this.elementsToDelete) {
 			element.delete();
 		}
 
 		// History
-		if (this._toDelete.size)
-			this.history.add({ type: "erase", elements: [...this._toDelete] });
+		if (this.elementsToDelete.size)
+			this.history.add({ type: "erase", elements: [...this.elementsToDelete] });
 
-		this._toDelete.clear();
+		this.elementsToDelete.clear();
 	}
 	public getIntersectingElementOnPoint(point: Vector, all = false) {
 		const elements = all ? this._elements : this.getElementsInView();

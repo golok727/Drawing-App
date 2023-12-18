@@ -11,15 +11,13 @@ class Viewport {
 	private ui: UI;
 	private app: Application;
 	private keyboard: Keyboard;
-	private zoomDisplay = document.getElementById(
-		"zoom-display-value"
-	) as HTMLDivElement;
+	private zoomDisplay: HTMLDivElement;
 
 	public center: Vector;
-	private _zoom = 1;
+	private _zoom: number;
 	private _offset: Vector;
 
-	private dragState = new Drag();
+	private dragState: Drag;
 	constructor(
 		interactiveCtx: CanvasRenderingContext2D,
 
@@ -39,11 +37,17 @@ class Viewport {
 		this.app = app;
 		this.keyboard.on("keydown", this.onPanStart.bind(this));
 		this.keyboard.on("keyup", this.onPanEnd.bind(this));
+		this._zoom = 1;
+		this.dragState = new Drag();
 
-		this.addEventListeners();
+		this.zoomDisplay = document.getElementById(
+			"zoom-display-value"
+		) as HTMLDivElement;
 		if (!this.zoomDisplay) {
 			console.warn("Zoom value display container is empty");
 		}
+
+		this.addEventListeners();
 	}
 
 	public get zoom() {

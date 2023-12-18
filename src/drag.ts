@@ -1,13 +1,19 @@
 import Vector from "./vector";
 
 class Drag {
-	private start = new Vector(0);
-	private end = new Vector(0);
-	public offset = new Vector(0);
-	private active = false;
-	private paused = false;
+	private start: Vector;
+	private end: Vector;
+	public offset: Vector;
+	private active: boolean;
+	private paused: boolean;
 
-	constructor() {}
+	constructor() {
+		this.start = new Vector(0);
+		this.end = new Vector(0);
+		this.offset = new Vector(0);
+		this.active = false;
+		this.paused = false;
+	}
 
 	public get state() {
 		return {

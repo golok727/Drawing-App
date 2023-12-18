@@ -22,19 +22,24 @@ const modifiersDefault: ModifierKeys = {
 	alt: false,
 };
 class Keyboard {
-	private keys: { [key: string]: boolean } = {
-		ctrl: false,
-		shift: false,
-		space: false,
-		alt: false,
-	};
-	onKeyDownHandlers: KeyboardEventHandler[] = [];
-	onKeyUpHandlers: KeyboardEventHandler[] = [];
+	private keys: { [key: string]: boolean };
+	onKeyDownHandlers: KeyboardEventHandler[];
+	onKeyUpHandlers: KeyboardEventHandler[];
 
 	constructor(
 		onKeyDown?: KeyboardEventHandler,
 		onKeyUp?: KeyboardEventHandler
 	) {
+		this.keys = {
+			ctrl: false,
+			shift: false,
+			space: false,
+			alt: false,
+		};
+		this.onKeyDownHandlers = [];
+
+		this.onKeyUpHandlers = [];
+
 		if (onKeyDown) this.onKeyDownHandlers.push(onKeyDown);
 		if (onKeyUp) this.onKeyUpHandlers.push(onKeyUp);
 		this.addEventListeners();

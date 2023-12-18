@@ -8,7 +8,7 @@ class InteractiveCanvas {
 	ctx: CanvasRenderingContext2D;
 	drawingCtx: CanvasRenderingContext2D;
 	app: Application;
-	drag = new Drag();
+	drag: Drag;
 
 	private isDrawing = false;
 	private isErasing = false;
@@ -16,6 +16,7 @@ class InteractiveCanvas {
 	private mouse = new Vector(0);
 
 	constructor(app: Application) {
+		this.drag = new Drag();
 		this.app = app;
 
 		this.ctx = this.app.renderer.interactiveCtx;

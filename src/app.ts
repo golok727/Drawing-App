@@ -19,10 +19,8 @@ export const MOUSE_BUTTONS = {
 export type Vec2 = [number, number];
 
 class Application {
-	private staticCanvasElement: HTMLCanvasElement =
-		document.createElement("canvas");
-	private interactiveCanvasElement: HTMLCanvasElement =
-		document.createElement("canvas");
+	private staticCanvasElement!: HTMLCanvasElement;
+	private interactiveCanvasElement!: HTMLCanvasElement;
 
 	private interactiveCanvas: InteractiveCanvas;
 	private staticCanvas: StaticCanvas;
@@ -37,10 +35,11 @@ class Application {
 	keyboard: Keyboard;
 	viewport: Viewport;
 
-	currentTool: Tool = "brush";
+	currentTool: Tool;
 
 	constructor(container: HTMLElement) {
 		this.setupCanvas(container);
+		this.currentTool = "brush";
 
 		this.keyboard = new Keyboard(
 			this.handleKeyDown.bind(this),
@@ -88,6 +87,9 @@ class Application {
 	}
 
 	private setupCanvas(container: HTMLElement) {
+		this.staticCanvasElement = document.createElement("canvas");
+		this.interactiveCanvasElement = document.createElement("canvas");
+
 		const {
 			staticCanvasElement: staticCanvas,
 			interactiveCanvasElement: interactiveCanvas,
