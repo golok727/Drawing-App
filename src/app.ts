@@ -8,7 +8,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import rough from "roughjs";
 import InteractiveCanvas from "./interactiveCanvas";
 import StaticCanvas from "./staticCanvas";
-import DestroyableEvent from "./destroyableEvent";
+import EventHandlerX from "./event";
 
 export const MOUSE_BUTTONS = {
 	LMB: 0,
@@ -18,7 +18,7 @@ export const MOUSE_BUTTONS = {
 
 export type Vec2 = [number, number];
 
-class Application extends DestroyableEvent {
+class Application {
 	private staticCanvasElement: HTMLCanvasElement =
 		document.createElement("canvas");
 	private interactiveCanvasElement: HTMLCanvasElement =
@@ -40,7 +40,6 @@ class Application extends DestroyableEvent {
 	currentTool: Tool = "brush";
 
 	constructor(container: HTMLElement) {
-		super();
 		this.setupCanvas(container);
 
 		this.keyboard = new Keyboard(
@@ -68,8 +67,7 @@ class Application extends DestroyableEvent {
 
 		this.interactiveCanvas = new InteractiveCanvas(this);
 		this.staticCanvas = new StaticCanvas(this.renderer, this.viewport);
-
-		this.listen();
+		this.addEventListeners();
 	}
 	get cWidth() {
 		return this.staticCanvasElement.offsetWidth;
@@ -79,12 +77,9 @@ class Application extends DestroyableEvent {
 	}
 
 	public dispose() {
-		this.viewport.destroy();
-		this.interactiveCanvas.destroy();
-		this.keyboard.destroy();
 		this.ui.destroy();
-		this.destroy();
 		this.history.clear();
+		EventHandlerX.destroy();
 	}
 
 	public render() {
@@ -301,14 +296,8 @@ class Application extends DestroyableEvent {
 		interactiveCanvas.height = this.staticCanvasElement.offsetHeight;
 	}
 
-	protected override addEventListeners() {
-		const resizeHandler = this.handleResize.bind(this);
-
-		window.addEventListener("resize", resizeHandler);
-
-		return () => {
-			window.removeEventListener("resize", resizeHandler);
-		};
+	private addEventListeners() {
+		EventHandlerX.on(window, "resize", this.handleResize.bind(this));
 	}
 }
 

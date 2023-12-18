@@ -1,4 +1,4 @@
-import DestroyableEvent from "./destroyableEvent";
+import EventHandlerX from "./event";
 import { Keys } from "./utils";
 
 type ModifierKeys = { ctrl: boolean; shift: boolean; alt: boolean };
@@ -21,7 +21,7 @@ const modifiersDefault: ModifierKeys = {
 	shift: false,
 	alt: false,
 };
-class Keyboard extends DestroyableEvent {
+class Keyboard {
 	private keys: { [key: string]: boolean } = {
 		ctrl: false,
 		shift: false,
@@ -35,11 +35,9 @@ class Keyboard extends DestroyableEvent {
 		onKeyDown?: KeyboardEventHandler,
 		onKeyUp?: KeyboardEventHandler
 	) {
-		super();
 		if (onKeyDown) this.onKeyDownHandlers.push(onKeyDown);
-
 		if (onKeyUp) this.onKeyUpHandlers.push(onKeyUp);
-		this.listen();
+		this.addEventListeners();
 	}
 
 	public isPressed(key: Keys | string, modifiers?: Partial<ModifierKeys>) {
@@ -122,19 +120,9 @@ class Keyboard extends DestroyableEvent {
 		}
 	}
 
-	protected override addEventListeners() {
-		const keyDownHandler = this.handleKeyDown.bind(this);
-		const keyUpHandler = this.handleKeyUp.bind(this);
-
-		document.addEventListener("keydown", keyDownHandler);
-		document.addEventListener("keyup", keyUpHandler);
-
-		return () => {
-			document.removeEventListener("keydown", keyDownHandler);
-			document.removeEventListener("keyup", keyUpHandler);
-			this.onKeyDownHandlers = [];
-			this.onKeyUpHandlers = [];
-		};
+	private addEventListeners() {
+		EventHandlerX.on(document, "keydown", this.handleKeyDown.bind(this));
+		EventHandlerX.on(document, "keyup", this.handleKeyUp.bind(this));
 	}
 }
 

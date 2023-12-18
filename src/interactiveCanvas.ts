@@ -1,10 +1,10 @@
-import DestroyableEvent from "./destroyableEvent";
 import Application, { MOUSE_BUTTONS } from "./app";
 import Drag from "./drag";
 import Vector from "./vector";
 import BoundingBox from "./boundingBox";
+import EventHandlerX from "./event";
 
-class InteractiveCanvas extends DestroyableEvent {
+class InteractiveCanvas {
 	ctx: CanvasRenderingContext2D;
 	drawingCtx: CanvasRenderingContext2D;
 	app: Application;
@@ -16,13 +16,11 @@ class InteractiveCanvas extends DestroyableEvent {
 	private mouse = new Vector(0);
 
 	constructor(app: Application) {
-		super();
 		this.app = app;
 
 		this.ctx = this.app.renderer.interactiveCtx;
 		this.drawingCtx = this.app.renderer.drawingCtx;
-
-		this.listen();
+		this.addEventListeners();
 	}
 
 	get cWidth() {
@@ -268,24 +266,28 @@ class InteractiveCanvas extends DestroyableEvent {
 	}
 
 	// Register Events
-	protected override addEventListeners() {
-		const pointerDownHandler = this.handlePointerDown.bind(this);
-		const pointerUpHandler = this.handlePointerUp.bind(this);
-		const pointerMoveHandler = this.handlePointerMove.bind(this);
-		const pointerLeaveHandler = this.handlePointerLeave.bind(this);
-
+	private addEventListeners() {
 		const { canvas: interactiveCanvas } = this.ctx;
-		interactiveCanvas.addEventListener("pointerdown", pointerDownHandler);
-		interactiveCanvas.addEventListener("pointerup", pointerUpHandler);
-		interactiveCanvas.addEventListener("pointermove", pointerMoveHandler);
-		document.addEventListener("pointerleave", pointerLeaveHandler);
-
-		return () => {
-			interactiveCanvas.removeEventListener("pointerdown", pointerDownHandler);
-			interactiveCanvas.removeEventListener("pointerup", pointerUpHandler);
-			interactiveCanvas.removeEventListener("pointermove", pointerMoveHandler);
-			document.removeEventListener("pointerleave", pointerLeaveHandler);
-		};
+		EventHandlerX.on(
+			interactiveCanvas,
+			"pointerup",
+			this.handlePointerUp.bind(this)
+		);
+		EventHandlerX.on(
+			interactiveCanvas,
+			"pointermove",
+			this.handlePointerMove.bind(this)
+		);
+		EventHandlerX.on(
+			interactiveCanvas,
+			"pointerdown",
+			this.handlePointerDown.bind(this)
+		);
+		EventHandlerX.on(
+			document,
+			"pointerleave",
+			this.handlePointerLeave.bind(this)
+		);
 	}
 }
 
